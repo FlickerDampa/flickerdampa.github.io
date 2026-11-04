@@ -60,6 +60,16 @@ h1 {
 #out .r { color: var(--muted); }
 .cur { display: inline-block; width: .55em; height: 1.05em; vertical-align: -.15em; background: var(--cyan); animation: blink 1.1s steps(2) infinite; }
 @keyframes blink { 50% { opacity: 0; } }
+.projects { margin-top: 40px; }
+.projects h2 { font: 500 .9rem "JetBrains Mono", ui-monospace, Consolas, monospace; color: var(--cyan); margin: 0 0 14px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+.card img { display: block; width: 100%; height: auto; border-bottom: 1px solid var(--line); }
+.card div { padding: 20px; }
+.card h3 { font-family: "Space Grotesk", system-ui, sans-serif; font-size: 1.35rem; margin: 0 0 8px; }
+.card p { color: var(--muted); font-size: .9rem; line-height: 1.65; margin: 0 0 14px; }
+.tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+.tags span { padding: 3px 9px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); font-size: .75rem; }
+.card a { margin: 0 8px 8px 0; }
 .links { margin-top: 24px; }
 a {
   display: inline-block; padding: 10px 16px; border: 1px solid var(--line); border-radius: 8px;
@@ -80,6 +90,19 @@ a:hover, a:focus-visible { border-color: var(--cyan); box-shadow: 0 0 18px rgba(
       <div class="bar"><i></i><i></i><i></i><span>flickerdampa@github: ~</span></div>
       <pre id="out" aria-label="whoami: security researcher. focus: security research, programming, problem solving. status: online."></pre>
     </div>
+    <section class="projects">
+      <h2>$ ls projects/</h2>
+      <article class="card">
+        <img src="https://raw.githubusercontent.com/FlickerDampa/DeviceDossier/main/docs/screenshots/report-summary-dark.png" width="2560" height="1600" loading="lazy" alt="DeviceDossier report summary, showing demo data">
+        <div>
+          <h3>DeviceDossier</h3>
+          <p>A portable Windows inventory and audit tool. Run it from a USB drive or a script to get a full dossier of a PC, covering hardware, software, mapped drives and security settings, as Excel, HTML and XML reports. Read-only and offline, with nothing to install.</p>
+          <div class="tags" style="padding:0"><span>C#</span><span>WPF</span><span>Windows</span><span>Security audit</span></div>
+          <a href="https://github.com/FlickerDampa/DeviceDossier">View repository &rarr;</a>
+          <a href="https://github.com/FlickerDampa/DeviceDossier/releases">Download beta</a>
+        </div>
+      </article>
+    </section>
     <div class="links"><a href="https://github.com/FlickerDampa">github.com/FlickerDampa &rarr;</a></div>
   </div>
 </main>
