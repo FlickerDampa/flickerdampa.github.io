@@ -2,16 +2,23 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-Du+OJKJSbdUgz5nrHeWWINvez6XKDDU/tyj/5c2uvwo=' 'sha256-ocAWUDwRkXMUiN38RuQoAiyk6u6jo8iDRynmH0XR9VA='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://raw.githubusercontent.com; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FlickerDampa | Security Researcher &amp; Programmer</title>
-<meta name="description" content="Security researcher and programmer investigating how systems fail and engineering the tools that make them harder to break.">
+<title>FlickerDampa | Security Researcher &amp; Engineer</title>
+<meta name="description" content="Security researcher and engineer focused on defensive tooling, digital forensics and resilient infrastructure.">
 <meta name="theme-color" content="#07090f">
 <meta name="color-scheme" content="dark">
 <meta name="darkreader-lock">
-<meta property="og:title" content="FlickerDampa | Security Researcher & Programmer">
+<meta property="og:title" content="FlickerDampa | Security Researcher & Engineer">
 <meta property="og:description" content="Security research, forensic tooling and purpose-built software. Never trust, always verify.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://flickerdampa.github.io/">
+<meta property="og:image" content="https://flickerdampa.github.io/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="FlickerDampa, security researcher and engineer, over a particle globe">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2307090f'/%3E%3Cpath d='M10 7h13v4h-9v4h7v4h-7v6h-4z' fill='%2353f5c1'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -198,7 +205,7 @@ footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
 
 /* boot */
 #boot{position:fixed;inset:0;z-index:90;display:grid;place-items:center;pointer-events:auto}
-#boot::before,#boot::after{content:"";position:absolute;left:0;right:0;height:50.5%;background:#05070c;transition:transform .85s cubic-bezier(.8,0,.15,1)}
+#boot::before,#boot::after{content:"";position:absolute;left:0;right:0;height:50.5%;background:#05070c;transition:transform .6s cubic-bezier(.8,0,.15,1)}
 #boot::before{top:0}#boot::after{bottom:0}
 #boot.open::before{transform:translateY(-101%)}#boot.open::after{transform:translateY(101%)}
 #boot .b{position:relative;z-index:1;width:min(420px,100% - 48px);font-family:var(--mono);font-size:.82rem;color:var(--muted);transition:opacity .25s}
@@ -242,7 +249,7 @@ h1.gl::after{opacity:.75;color:#ff4d8d;transform:translate(-4px,1px);clip-path:i
 .shot{position:relative;display:block;transform-style:preserve-3d}
 .shot::before{content:"";position:absolute;z-index:2;left:0;right:0;top:0;height:34%;pointer-events:none;background:linear-gradient(180deg,transparent,rgba(83,245,193,.13) 88%,rgba(83,245,193,.8) 100%);animation:scan 4.4s cubic-bezier(.45,0,.55,1) infinite}
 @keyframes scan{from{transform:translateY(-100%)}to{transform:translateY(300%)}}
-.shot::after{content:"AUDIT // VERIFIED";position:absolute;z-index:3;right:10px;bottom:10px;font-family:var(--mono);font-size:.64rem;letter-spacing:.08em;color:var(--mint);padding:3px 7px;border:1px solid rgba(83,245,193,.45);border-radius:5px;background:rgba(7,9,15,.82)}
+.shot::after{content:"DEMO DATA";position:absolute;z-index:3;right:10px;bottom:10px;font-family:var(--mono);font-size:.64rem;letter-spacing:.08em;color:var(--mint);padding:3px 7px;border:1px solid rgba(83,245,193,.45);border-radius:5px;background:rgba(7,9,15,.82)}
 
 /* stats beam */
 .stats{position:relative}
@@ -294,7 +301,7 @@ h1.gl::after{opacity:.75;color:#ff4d8d;transform:translate(-4px,1px);clip-path:i
     <div>
       <div class="status rv"><span class="dot"></span>status: online</div>
       <h1 class="rv" id="h1" data-t="FlickerDampa" aria-label="FlickerDampa"><span id="name" aria-hidden="true">FlickerDampa</span></h1>
-      <p class="lead rv">Security researcher and programmer. I investigate how systems fail, then engineer the tools that make them harder to break.</p>
+      <p class="lead rv">Security researcher and engineer focused on defensive tooling, digital forensics and resilient infrastructure. I investigate how systems fail, then build what makes them harder to break.</p>
       <p class="rotor rv" id="rotor" aria-hidden="true">never trust, always verify</p>
       <div class="cta rv">
         <a class="btn primary" href="#projects">Explore the work →</a>
@@ -320,7 +327,7 @@ h1.gl::after{opacity:.75;color:#ff4d8d;transform:translate(-4px,1px);clip-path:i
     <div class="stat"><strong data-n="4" data-s="+">4+</strong><span>years of hands-on IT and security practice</span></div>
     <div class="stat"><strong data-n="80" data-s="+">80+</strong><span>endpoints managed</span></div>
     <div class="stat"><strong data-n="60" data-s="+">60+</strong><span>users supported</span></div>
-    <div class="stat"><strong data-n="90" data-p="~" data-s="%">~90%</strong><span>data recovery success rate across storage incidents</span></div>
+    <div class="stat"><strong data-n="90" data-p="~" data-s="%">~90%</strong><span>data recovered across several storage incidents</span></div>
     <div class="stat"><strong data-n="13">13</strong><span>SMEs and startups advised pro bono</span></div>
   </div>
 </div>
@@ -337,7 +344,7 @@ h1.gl::after{opacity:.75;color:#ff4d8d;transform:translate(-4px,1px);clip-path:i
       <div>
         <span class="badge ok">public beta</span>
         <h3>DeviceDossier</h3>
-        <p>Complete visibility into any Windows machine, delivered by one portable tool. Launch it from a USB drive or a script and receive an audit-ready dossier of the device.</p>
+        <p>A detailed picture of a Windows machine, delivered by one portable tool. Launch it from a USB drive or a script and receive a structured dossier of the device.</p>
         <ul class="plist">
           <li>Full coverage of hardware, software, mapped drives and security posture</li>
           <li>Reporting in Excel, HTML and XML</li>
@@ -364,7 +371,7 @@ h1.gl::after{opacity:.75;color:#ff4d8d;transform:translate(-4px,1px);clip-path:i
       <article class="card rv" style="--d:.08s">
         <span class="badge">private tool</span>
         <h3>Self-Healing Permissions Fix</h3>
-        <p>Traced recurring CAD crashes to denied licence registry keys for standard users, then engineered a fix that maintains itself: a scheduled task keeps the permissions correct and logs every run across standalone workstations.</p>
+        <p>Traced recurring application crashes to denied licence registry keys for standard users, then engineered a fix that maintains itself: a scheduled task keeps the permissions correct and logs every run across standalone workstations.</p>
         <ul class="tags"><li>PowerShell</li><li>Task Scheduler</li><li>Registry ACLs</li></ul>
       </article>
       <article class="card rv">
@@ -395,7 +402,7 @@ h1.gl::after{opacity:.75;color:#ff4d8d;transform:translate(-4px,1px);clip-path:i
         <ul class="tags"><li>Office 365 Security</li><li>MFA</li><li>Microsoft Defender</li><li>Firewalls</li><li>Endpoint audits</li></ul></article>
       <article class="card rv" style="--d:.06s"><h3>Forensics</h3><p>Establishing what happened and recovering what matters.</p>
         <ul class="tags"><li>Windows artefacts</li><li>Sysmon</li><li>Log analysis</li><li>Incident response</li><li>Data recovery</li></ul></article>
-      <article class="card rv" style="--d:.12s"><h3>Infrastructure</h3><p>Building networks, servers and storage that stay dependable.</p>
+      <article class="card rv" style="--d:.12s"><h3>Secure infrastructure</h3><p>Building networks, servers and storage that stay dependable.</p>
         <ul class="tags"><li>Network engineering</li><li>Windows Server</li><li>Linux</li><li>Synology NAS</li><li>Backups</li></ul></article>
       <article class="card rv" style="--d:.18s"><h3>Code</h3><p>Automating what should never be done by hand.</p>
         <ul class="tags"><li>C#</li><li>PowerShell</li><li>Python</li><li>C++</li><li>Java</li><li>Web</li></ul></article>
@@ -411,12 +418,12 @@ h1.gl::after{opacity:.75;color:#ff4d8d;transform:translate(-4px,1px);clip-path:i
       <h2>Track record</h2>
     </div>
     <div class="ach">
-      <article class="card rv"><strong>Distinction</strong><p>MSc Cyber Security, awarded with a final CGPA of 3.87.</p></article>
+      <article class="card rv"><strong>First Class &amp; Distinction</strong><p>First Class Honours and Distinction across BSc and MSc, dual degree.</p></article>
       <article class="card rv" style="--d:.06s"><strong>PhD candidate</strong><p>Doctoral research in Computer Science, focused on zero-trust systems at the edge.</p></article>
       <article class="card rv" style="--d:.12s"><strong>RCCE certified</strong><p>Professional security certification, issued July 2023.</p></article>
       <article class="card rv"><strong>Audits automated</strong><p>Replaced manual device audits of roughly two hours each with automated tooling, strengthening inventory management in the process.</p></article>
-      <article class="card rv" style="--d:.06s"><strong>Back within hours</strong><p>Restored CAD software within hours of Windows update misconfigurations, keeping engineering work moving.</p></article>
-      <article class="card rv" style="--d:.12s"><strong>First public release</strong><p>Released DeviceDossier as a public beta, validated on real-world PCs.</p></article>
+      <article class="card rv" style="--d:.06s"><strong>Rapid recovery</strong><p>Restored failed business software within hours of Windows update misconfigurations.</p></article>
+      <article class="card rv" style="--d:.12s"><strong>Team guidance</strong><p>Guided a three-member IT team handling 30+ support tickets a week.</p></article>
     </div>
   </div>
 </section>
@@ -426,8 +433,12 @@ h1.gl::after{opacity:.75;color:#ff4d8d;transform:translate(-4px,1px);clip-path:i
     <div class="contact rv">
       <div class="kicker">$ ssh flickerdampa</div>
       <h2>Have a hard problem worth solving?</h2>
-      <p>Whether it is the tooling, the research or a security challenge, the conversation starts on GitHub.</p>
-      <div class="cta"><a class="btn primary" href="https://github.com/FlickerDampa" target="_blank" rel="noopener">github.com/FlickerDampa →</a></div>
+      <p>Whether it is the tooling, the research or a security challenge, I would be glad to hear from you.</p>
+      <div class="cta">
+        <a class="btn primary" href="mailto:Mabrook@Tonnage.biz">Email me →</a>
+        <a class="btn" href="https://www.linkedin.com/in/flicker/" target="_blank" rel="noopener">LinkedIn</a>
+        <a class="btn" href="https://github.com/FlickerDampa" target="_blank" rel="noopener">GitHub</a>
+      </div>
     </div>
   </div>
 </section>
@@ -518,11 +529,11 @@ h1.gl::after{opacity:.75;color:#ff4d8d;transform:translate(-4px,1px);clip-path:i
   var out=$('#out'),inp=$('#cmd');
   var cmds={
     help:'commands: whoami  projects  skills  achievements\n          contact  verify  clear',
-    whoami:'FlickerDampa\nsecurity researcher and programmer',
+    whoami:'FlickerDampa\nsecurity researcher and engineer',
     projects:'DeviceDossier        portable Windows audit tool\nForensic Recovery    activity trail recovery\nSelf-Healing Fix     self-maintaining permissions\nBadUSB Framework     incident response research\nZero-Trust Alloc     edge-fog doctoral research',
     skills:'security   forensics   infrastructure\nC#  PowerShell  Python  C++  Java  web',
-    achievements:'MSc Cyber Security, Distinction, CGPA 3.87\nPhD candidate, Computer Science\nRCCE certified, Jul 2023',
-    contact:'github.com/FlickerDampa',
+    achievements:'BSc and MSc, First Class Honours and Distinction\nPhD candidate, Computer Science\nRCCE certified, Jul 2023',
+    contact:'email     Mabrook@Tonnage.biz\nlinkedin  linkedin.com/in/flicker\ngithub    github.com/FlickerDampa',
     verify:'checking visitor...\nidentity: unknown\ndevice: unknown\ntrust: 0\nresult: read-only access granted'
   };
   var jump={projects:'#projects',skills:'#skills',achievements:'#achievements',contact:'#contact'};
@@ -687,11 +698,11 @@ h1.gl::after{opacity:.75;color:#ff4d8d;transform:translate(-4px,1px);clip-path:i
     b.innerHTML='<div class="b"><div class="l"></div><div class="l"></div><div class="l"></div><div class="bar"><i></i></div></div>';
     document.body.appendChild(b);
     var ls=$$('.l',b),bar=$('.bar i',b),msgs=[['establishing session','ok'],['verifying visitor','trust: 0'],['policy applied','read-only']],i=0,done=false;
-    function end(){if(done)return;done=true;b.classList.add('open');window.__decode();setTimeout(function(){b.remove()},950)}
+    function end(){if(done)return;done=true;b.classList.add('open');window.__decode();setTimeout(function(){b.remove()},700)}
     (function next(){
       if(done) return;
-      if(i>=msgs.length){bar.style.setProperty('--v',1);setTimeout(end,240);return}
-      ls[i].innerHTML=msgs[i][0]+' ... <b>'+msgs[i][1]+'</b>';i++;bar.style.setProperty('--v',i/3*.92);setTimeout(next,340);
+      if(i>=msgs.length){bar.style.setProperty('--v',1);setTimeout(end,90);return}
+      ls[i].innerHTML=msgs[i][0]+' ... <b>'+msgs[i][1]+'</b>';i++;bar.style.setProperty('--v',i/3*.92);setTimeout(next,130);
     })();
     b.addEventListener('click',end);addEventListener('keydown',end,{once:true});
   })();
