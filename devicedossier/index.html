@@ -1,0 +1,905 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-Du+OJKJSbdUgz5nrHeWWINvez6XKDDU/tyj/5c2uvwo=' 'sha256-6Sor/xDtTkA5MZMXeg8xK3iX4fOcZAmLOJfd/LKD2P0='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DeviceDossier: Free Portable Windows Audit Tool (Beta)</title>
+<meta name="description" content="Free, open-source Windows 10 and 11 audit tool. Run it from a USB drive for a full report of any PC's hardware, software and security in Excel, HTML and XML.">
+<link rel="canonical" href="https://flickerdampa.github.io/devicedossier/">
+<meta name="theme-color" content="#05070d">
+<meta name="color-scheme" content="dark">
+<meta name="darkreader-lock">
+<meta property="og:type" content="website">
+<meta property="og:title" content="DeviceDossier: know every PC in one pass">
+<meta property="og:description" content="Free, portable Windows audit tool. One run, one complete dossier of any PC as Excel, HTML and XML. Read-only, offline, open source. Public beta.">
+<meta property="og:url" content="https://flickerdampa.github.io/devicedossier/">
+<meta property="og:image" content="https://flickerdampa.github.io/devicedossier/img/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="DeviceDossier, a free portable Windows audit tool, shown with its HTML report">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" href="img/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"SoftwareApplication","name":"DeviceDossier","applicationCategory":"UtilitiesApplication","operatingSystem":"Windows 10, Windows 11","description":"Portable Windows inventory and audit tool. Produces a complete report of a PC's hardware, Windows, software, mapped drives and security settings as Excel, HTML and XML.","url":"https://flickerdampa.github.io/devicedossier/","downloadUrl":"https://github.com/FlickerDampa/DeviceDossier/releases","license":"https://opensource.org/licenses/MIT","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"FlickerDampa","url":"https://flickerdampa.github.io/"},"codeRepository":"https://github.com/FlickerDampa/DeviceDossier","screenshot":"https://flickerdampa.github.io/devicedossier/img/summary-dark.webp"}
+</script>
+<style>
+:root{
+  --bg:#05070d;--bg2:#0a0e19;--ink:#eef2ff;--soft:#c3cbe0;--muted:#8f9ab3;--line:rgba(140,160,220,.14);--line2:rgba(140,160,220,.3);
+  --blue:#4f7cff;--indigo:#6b5cff;--cyan:#38e1ff;--amber:#ffb547;--mint:#4ff0b4;--red:#ff6b7d;
+  --brand:linear-gradient(100deg,#4f7cff,#6b5cff 45%,#38e1ff);
+  --d:'Unbounded',system-ui,sans-serif;--s:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;--m:'JetBrains Mono',ui-monospace,Consolas,monospace;
+  --r:20px;--w:1180px;
+}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth;scroll-padding-top:90px;-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--s);line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;display:block}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:3px;border-radius:6px}
+::selection{background:var(--cyan);color:#021018}
+code,.m{font-family:var(--m)}
+.skip{position:fixed;left:16px;top:-60px;z-index:100;background:var(--cyan);color:#021018;padding:8px 14px;border-radius:8px;font-weight:700}
+.skip:focus{top:12px}
+#field{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.paper{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(rgba(140,160,220,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(140,160,220,.045) 1px,transparent 1px);
+  background-size:56px 56px;-webkit-mask:radial-gradient(ellipse at 50% 0%,#000 30%,transparent 75%);mask:radial-gradient(ellipse at 50% 0%,#000 30%,transparent 75%)}
+.aura{position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(900px 520px at 80% -10%,rgba(79,124,255,.22),transparent 70%),radial-gradient(700px 500px at -10% 60%,rgba(56,225,255,.08),transparent 70%)}
+main,footer{position:relative;z-index:1}
+.wrap{width:min(var(--w),100% - 40px);margin-inline:auto}
+section{padding:96px 0}
+
+/* nav */
+.nav{position:fixed;inset:12px 0 auto;z-index:50;width:min(var(--w),100% - 24px);margin:auto;display:flex;align-items:center;gap:14px;padding:8px 8px 8px 14px;border-radius:16px;background:rgba(8,11,20,.82);border:1px solid var(--line);backdrop-filter:blur(16px) saturate(1.4);-webkit-backdrop-filter:blur(16px) saturate(1.4)}
+.nav::after{content:"";position:absolute;left:14px;right:14px;bottom:-1px;height:2px;background:var(--brand);transform-origin:left;transform:scaleX(var(--p,0));border-radius:2px}
+.logo{display:flex;align-items:center;gap:10px;font-family:var(--d);font-weight:700;font-size:.95rem;letter-spacing:-.01em;white-space:nowrap}
+.logo img{width:30px;height:30px;border-radius:8px}
+.nav ul{display:flex;list-style:none;padding:0;margin-left:auto;gap:2px}
+.nav li a{display:block;padding:8px 12px;border-radius:10px;font-size:.88rem;color:var(--muted);font-weight:600;transition:.2s}
+.nav li a:hover,.nav li a.on{color:var(--ink);background:rgba(140,160,220,.12)}
+.nav .dl{padding:9px 16px;border-radius:11px;background:var(--ink);color:#05070d;font-weight:700;font-size:.86rem;white-space:nowrap}
+.menu{display:none;width:40px;height:40px;border-radius:11px;border:1px solid var(--line2);place-items:center;margin-left:auto}
+.menu i,.menu i::before{display:block;width:16px;height:2px;background:var(--ink);position:relative;content:""}
+.menu i::before{position:absolute;top:6px}
+
+/* shared */
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-family:var(--m);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--cyan)}
+.eyebrow::before{content:"";width:18px;height:1px;background:currentColor}
+h1,h2,h3{font-family:var(--d);letter-spacing:-.03em;line-height:1.05}
+h2{font-size:clamp(2rem,4.6vw,3.3rem);margin:14px 0 14px;font-weight:700}
+h2 em{font-style:normal;background:var(--brand);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lede{color:var(--soft);font-size:clamp(1.02rem,1.6vw,1.18rem);max-width:40em}
+.head{margin-bottom:46px;max-width:760px}
+.btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:14px 22px;border-radius:14px;font-weight:700;border:1px solid var(--line2);transition:transform .2s,border-color .2s,background .2s,box-shadow .3s;overflow:hidden;white-space:nowrap}
+.btn:hover{border-color:var(--cyan);transform:translateY(-2px)}
+.btn.pri{background:var(--brand);border-color:transparent;color:#fff;box-shadow:0 10px 40px -10px rgba(79,124,255,.7)}
+.btn.pri:hover{box-shadow:0 16px 50px -10px rgba(56,225,255,.7)}
+.btn.pri::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.5) 50%,transparent 65%);transform:translateX(-120%)}
+.btn.pri:hover::after{transform:translateX(120%);transition:transform .8s}
+.btn svg{width:18px;height:18px}
+.card{position:relative;border-radius:var(--r);border:1px solid var(--line);background:linear-gradient(180deg,rgba(18,24,42,.72),rgba(10,14,25,.72));backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);overflow:hidden;transition:border-color .3s,transform .4s cubic-bezier(.16,1,.3,1)}
+.card::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .3s;background:radial-gradient(360px circle at var(--x,50%) var(--y,50%),rgba(56,225,255,.12),transparent 70%)}
+.card:hover{border-color:var(--line2)}
+.card:hover::before{opacity:1}
+.card>*{position:relative}
+.tag{display:inline-block;font-family:var(--m);font-size:.72rem;padding:3px 9px;border-radius:7px;background:rgba(140,160,220,.11);color:var(--soft)}
+
+/* hero */
+.hero{min-height:100svh;display:flex;align-items:center;padding:120px 0 70px}
+.hero-grid{display:grid;grid-template-columns:1.05fr 1fr;gap:54px;align-items:center}
+.beta{display:inline-flex;align-items:center;gap:10px;padding:6px 14px 6px 6px;border-radius:999px;border:1px solid rgba(255,181,71,.35);background:rgba(255,181,71,.08);font-size:.84rem;color:#ffd79a;font-weight:600}
+.beta b{font-family:var(--m);font-size:.7rem;letter-spacing:.1em;padding:3px 8px;border-radius:999px;background:var(--amber);color:#1a1000}
+.hero h1{font-size:clamp(2.3rem,4.2vw,4.1rem);font-weight:800;margin:22px 0 20px}
+.hero h1 .ln{display:block;overflow:hidden;padding-bottom:.06em;white-space:nowrap}
+.hero h1 .ln>span{display:inline-block;transform:translateY(105%);transition:transform 1s cubic-bezier(.16,1,.3,1)}
+.hero h1 .ln:nth-child(2)>span{transition-delay:.12s;background:var(--brand);-webkit-background-clip:text;background-clip:text;color:transparent}
+.ready .hero h1 .ln>span{transform:none}
+.hero .lede{max-width:34em}
+.cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
+.facts{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:26px;list-style:none;padding:0;font-size:.86rem;color:var(--muted);font-weight:600}
+.facts li{display:flex;align-items:center;gap:7px}
+.facts li::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--mint);box-shadow:0 0 10px var(--mint)}
+
+/* device stage */
+.stage{position:relative;perspective:1400px}
+.device{position:relative;transform:rotateY(-14deg) rotateX(8deg);transform-style:preserve-3d;transition:transform .8s cubic-bezier(.16,1,.3,1);will-change:transform}
+.screen{position:relative;border-radius:16px;padding:10px;background:linear-gradient(160deg,#1a2240,#0b1020);border:1px solid var(--line2);box-shadow:0 50px 120px -40px rgba(79,124,255,.6),0 0 0 1px rgba(255,255,255,.03) inset}
+.screen .win{position:relative;border-radius:9px;overflow:hidden;aspect-ratio:16/10;background:#0a0f1d}
+.screen img{width:100%;height:100%;object-fit:cover;object-position:top left}
+.scan{position:absolute;left:0;right:0;top:0;height:30%;pointer-events:none;background:linear-gradient(180deg,transparent,rgba(56,225,255,.16) 85%,rgba(56,225,255,.95) 100%);animation:scan 3.8s cubic-bezier(.45,0,.55,1) infinite;mix-blend-mode:screen}
+@keyframes scan{from{transform:translateY(-100%)}to{transform:translateY(340%)}}
+.demo{position:absolute;left:12px;bottom:12px;font-family:var(--m);font-size:.7rem;letter-spacing:.1em;padding:3px 7px;border-radius:5px;background:rgba(5,7,13,.85);color:var(--muted);border:1px solid var(--line)}
+.chip{position:absolute;display:flex;align-items:center;gap:9px;padding:9px 13px;border-radius:12px;font-family:var(--m);font-size:.74rem;background:rgba(9,13,24,.88);border:1px solid var(--line2);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 18px 40px -16px rgba(0,0,0,.8);z-index:3;opacity:0;translate:0 12px;transition:opacity .6s,translate .8s cubic-bezier(.16,1,.3,1);white-space:nowrap}
+.chip i{width:8px;height:8px;border-radius:50%;background:var(--mint);box-shadow:0 0 10px var(--mint)}
+.chip.a i{background:var(--amber);box-shadow:0 0 10px var(--amber)}
+.chip span{color:var(--muted)}
+.ready .chip{opacity:1;translate:0 0}
+.c1{top:-18px;left:-26px;transition-delay:.7s}
+.c2{top:32%;right:-34px;transition-delay:.9s}
+.c3{bottom:-20px;left:12%;transition-delay:1.1s}
+.c4{bottom:24%;left:-40px;transition-delay:1.3s}
+.stamp{position:absolute;top:-30px;right:6%;transform:rotate(-12deg);z-index:4;font-family:var(--d);font-weight:800;font-size:1.05rem;letter-spacing:.14em;color:var(--amber);border:3px solid var(--amber);padding:6px 14px;border-radius:8px;opacity:0;scale:1.6;transition:opacity .3s 1.6s,scale .5s cubic-bezier(.2,1.6,.4,1) 1.6s;text-shadow:0 0 18px rgba(255,181,71,.5);background:rgba(5,7,13,.6)}
+.ready .stamp{opacity:.95;scale:1}
+
+/* ticker */
+.ticker{border-block:1px solid var(--line);background:rgba(8,11,20,.6);overflow:hidden;padding:16px 0;-webkit-mask:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);mask:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
+.ticker .row{display:flex;gap:44px;width:max-content;animation:tick 55s linear infinite;font-family:var(--m);font-size:.86rem;color:var(--muted);white-space:nowrap}
+.ticker .row b{color:var(--cyan);font-weight:500}
+.ticker:hover .row{animation-play-state:paused}
+@keyframes tick{to{transform:translateX(calc(-50% - 22px))}}
+
+/* why */
+.why{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.why .card{padding:30px}
+.why h3{font-size:1.15rem;margin:12px 0 16px}
+.before li,.after li{list-style:none;padding:9px 0;border-top:1px dashed var(--line);display:flex;gap:12px;color:var(--soft);font-size:.96rem}
+.before ul,.after ul{padding:0}
+.before li::before{content:"✕";color:var(--red);font-family:var(--m)}
+.after li::before{content:"✓";color:var(--mint);font-family:var(--m)}
+.before .tagx{color:var(--red)}.after .tagx{color:var(--mint)}
+.redact{background:var(--ink);color:transparent;border-radius:3px;padding:0 4px;transition:background .5s,color .5s;cursor:help}
+.redact:hover,.redact:focus{background:transparent;color:var(--amber)}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-top:20px}
+.stat{padding:26px 22px;background:rgba(9,12,22,.85)}
+.stat strong{display:block;font-family:var(--d);font-size:clamp(2rem,4vw,2.8rem);font-weight:700;letter-spacing:-.03em;line-height:1.1;background:var(--brand);-webkit-background-clip:text;background-clip:text;color:transparent}
+.stat span{color:var(--muted);font-size:.9rem}
+
+/* simulator */
+.sim{display:grid;grid-template-columns:.9fr 1.1fr;gap:20px;align-items:stretch}
+.sim .ctrl{padding:30px;display:flex;flex-direction:column;gap:18px}
+.switch{display:flex;padding:5px;border-radius:14px;background:rgba(5,7,13,.7);border:1px solid var(--line)}
+.switch button{flex:1;padding:11px 12px;border-radius:10px;font-weight:700;font-size:.9rem;color:var(--muted);transition:.25s}
+.switch button[aria-pressed="true"]{background:var(--ink);color:#05070d}
+.note{font-size:.9rem;color:var(--muted)}
+.note b{color:var(--soft)}
+.term{display:flex;flex-direction:column;background:rgba(4,6,12,.92);font-family:var(--m);font-size:.8rem}
+.term .bar{display:flex;align-items:center;gap:7px;padding:12px 16px;border-bottom:1px solid var(--line);color:var(--muted);font-size:.74rem}
+.term .bar i{width:10px;height:10px;border-radius:50%;background:#252d42}
+.term .bar em{font-style:normal;margin-left:8px}
+.rows{padding:10px 12px;flex:1}
+.r{position:relative;display:grid;grid-template-columns:30px 1fr auto;gap:10px;align-items:center;padding:7px 10px;border-radius:9px;opacity:.38;transition:opacity .3s,background .3s}
+.r+.r{margin-top:2px}
+.r.go{opacity:1;background:rgba(79,124,255,.13)}
+.r.done{opacity:1}
+.r .n{color:var(--muted);font-size:.72rem}
+.r .t{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.r .t small{color:var(--muted);font-size:.72rem;margin-left:8px}
+.r .s{font-size:.7rem;text-align:right;color:var(--muted);padding:2px 8px;border-radius:999px}
+.r.go .s{color:var(--cyan)}
+.r.done .s{color:var(--mint);background:rgba(79,240,180,.08)}
+.r.done.part .s{color:var(--amber);background:rgba(255,181,71,.1)}
+.r .pb{position:absolute;left:10px;right:10px;bottom:0;height:2px;border-radius:2px;overflow:hidden;opacity:0;transition:opacity .3s}
+.r.go .pb{opacity:1}
+.r .pb i{display:block;height:100%;background:var(--brand);transform:scaleX(0);transform-origin:left;transition:transform var(--dur,.4s) linear}
+.r.go .pb i{transform:scaleX(1)}
+.r .why{grid-column:2/4;display:none;color:var(--amber);font-size:.7rem;margin-top:-2px}
+.r.done.part .why{display:block}
+.sum{border-top:1px solid var(--line);padding:12px 16px;color:var(--muted);min-height:44px}
+.sum b{color:var(--mint);font-weight:500}
+.meter{display:flex;align-items:center;gap:22px;padding:18px;border-radius:16px;background:rgba(5,7,13,.55);border:1px solid var(--line)}
+.ring{position:relative;width:96px;height:96px;flex:none}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:7}
+.ring .bg{stroke:rgba(140,160,220,.14)}
+.ring .fg{stroke:url(#rg);stroke-linecap:round;stroke-dasharray:264;stroke-dashoffset:264;transition:stroke-dashoffset .35s ease}
+.ring b{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--d);font-size:1.25rem;font-weight:700}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;flex:1}
+.kpis div{font-size:.74rem;color:var(--muted)}
+.kpis strong{display:block;font-family:var(--m);font-size:1.15rem;color:var(--ink);font-weight:500}
+.kpis .pa strong{color:var(--amber)}
+.outs{display:flex;flex-direction:column;gap:8px}
+.outs .lbl{font-family:var(--m);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.outs .f{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:11px;border:1px dashed var(--line2);font-family:var(--m);font-size:.74rem;color:var(--muted);transition:all .4s}
+.outs .f i{font-style:normal;font-size:.66rem;padding:2px 7px;border-radius:5px;border:1px solid currentColor}
+.outs .f span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.outs .f em{font-style:normal;margin-left:auto;opacity:0;transition:opacity .4s}
+.outs .f.ok{border-style:solid;color:var(--soft);background:rgba(79,240,180,.05);border-color:rgba(79,240,180,.3)}
+.outs .f.ok em{opacity:1;color:var(--mint)}
+.outs .x{color:#5be38f}.outs .h{color:#ff9b5b}.outs .m2{color:var(--cyan)}
+
+/* bento */
+.bento{display:grid;grid-template-columns:repeat(6,1fr);gap:18px}
+.bento .card{padding:26px;min-height:200px}
+.b-wide{grid-column:span 3}.b-mid{grid-column:span 2}.b-full{grid-column:span 6}
+.ic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:rgba(79,124,255,.14);border:1px solid rgba(79,124,255,.3);margin-bottom:16px;color:var(--cyan)}
+.ic svg{width:22px;height:22px}
+.bento h3{font-size:1.05rem;margin-bottom:8px;letter-spacing:-.02em}
+.bento p{color:var(--muted);font-size:.94rem}
+.fmt{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+.fmt span{font-family:var(--m);font-size:.74rem;padding:6px 10px;border-radius:9px;border:1px solid var(--line2)}
+.fmt span:nth-child(1){color:#5be38f;border-color:rgba(91,227,143,.4)}
+.fmt span:nth-child(2){color:#ff9b5b;border-color:rgba(255,155,91,.4)}
+.fmt span:nth-child(3){color:var(--cyan);border-color:rgba(56,225,255,.4)}
+.themes{display:flex;gap:8px;margin-top:16px}
+.themes i{width:34px;height:22px;border-radius:6px;border:1px solid var(--line2)}
+.themes i:nth-child(1){background:#f4f6fb}.themes i:nth-child(2){background:#0d1222}.themes i:nth-child(3){background:#000;border:2px solid #ffff00}
+
+/* explorer */
+.exp{display:grid;grid-template-columns:300px 1fr;gap:18px}
+.list{display:flex;flex-direction:column;gap:4px;max-height:560px;overflow:auto;padding:8px;scrollbar-width:thin;scrollbar-color:var(--line2) transparent}
+.list button{display:flex;align-items:center;gap:12px;text-align:left;padding:10px 12px;border-radius:11px;font-weight:600;font-size:.93rem;color:var(--muted);transition:.2s}
+.list button span{font-family:var(--m);font-size:.72rem;min-width:28px;color:var(--muted);opacity:.8}
+.list button:hover{color:var(--ink);background:rgba(140,160,220,.08)}
+.list button[aria-selected="true"]{color:var(--ink);background:linear-gradient(90deg,rgba(79,124,255,.22),rgba(79,124,255,.04));box-shadow:inset 2px 0 0 var(--cyan)}
+.panel{padding:34px;display:flex;flex-direction:column}
+.panel .k{font-family:var(--m);color:var(--cyan);font-size:.8rem}
+.panel h3{font-size:clamp(1.5rem,3vw,2.2rem);margin:8px 0 18px}
+.fields{display:flex;flex-wrap:wrap;gap:8px}
+.fields span{font-family:var(--m);font-size:.8rem;padding:8px 12px;border-radius:10px;background:rgba(5,7,13,.6);border:1px solid var(--line);opacity:0;translate:0 8px;animation:pop .45s cubic-bezier(.16,1,.3,1) forwards;animation-delay:calc(var(--i)*35ms)}
+@keyframes pop{to{opacity:1;translate:0 0}}
+.panel .adm{margin-top:20px;font-size:.88rem;color:var(--amber);display:none}
+.panel .adm.show{display:block}
+.panel .src{margin-top:auto;padding-top:24px;font-size:.82rem;color:var(--muted)}
+
+/* reports */
+.reports{display:grid;grid-template-columns:1.25fr .75fr;gap:20px;align-items:center}
+.shot{position:relative;border-radius:16px;overflow:hidden;border:1px solid var(--line2);box-shadow:0 40px 100px -40px rgba(79,124,255,.5)}
+.shot img{width:100%;height:auto;aspect-ratio:16/10;transition:opacity .5s}
+.shot .alt{position:absolute;inset:0;height:100%;object-fit:cover;opacity:0}
+.shot:hover .alt,.shot.flip .alt{opacity:1}
+.toggle{position:absolute;right:12px;top:12px;font-family:var(--m);font-size:.7rem;padding:5px 9px;border-radius:7px;background:rgba(5,7,13,.85);border:1px solid var(--line2);color:var(--soft)}
+.rlist{display:flex;flex-direction:column;gap:14px}
+.rlist .card{padding:20px 22px}
+.rlist h3{font-size:1rem;display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.rlist p{color:var(--muted);font-size:.92rem}
+.ext{font-family:var(--m);font-size:.72rem;padding:3px 8px;border-radius:6px;border:1px solid currentColor}
+
+/* steps */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;counter-reset:s}
+.steps .card{padding:26px}
+.steps .card::after{counter-increment:s;content:"0" counter(s);position:absolute;right:18px;top:12px;font-family:var(--d);font-weight:800;font-size:3rem;color:rgba(140,160,220,.08)}
+.steps h3{font-size:1.02rem;margin:14px 0 8px;letter-spacing:-.02em}
+.steps p{color:var(--muted);font-size:.92rem}
+.steps code{font-size:.78rem;color:var(--cyan)}
+.warn{margin-top:20px;padding:22px 24px;display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start;border-color:rgba(255,181,71,.3);background:linear-gradient(180deg,rgba(255,181,71,.07),rgba(10,14,25,.72))}
+.warn .ic{background:rgba(255,181,71,.12);border-color:rgba(255,181,71,.35);color:var(--amber);margin:0}
+.warn p{color:var(--soft);font-size:.94rem}
+.warn a{color:var(--amber);text-decoration:underline;text-underline-offset:3px}
+
+/* cli */
+.cli{display:grid;grid-template-columns:.85fr 1.15fr;gap:20px;align-items:start}
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0}
+.pills span{padding:8px 13px;border-radius:999px;border:1px solid var(--line2);font-size:.86rem;font-weight:600;color:var(--soft)}
+.code{background:rgba(4,6,12,.94)}
+.code pre{padding:20px;overflow-x:auto;font-family:var(--m);font-size:.8rem;line-height:1.75;color:var(--soft);scrollbar-width:thin}
+.code .k1{color:var(--cyan)}.code .k2{color:var(--amber)}.code .k3{color:var(--mint)}.code .k4{color:var(--muted)}
+.copy{font-family:var(--m);font-size:.72rem;padding:5px 10px;border-radius:7px;border:1px solid var(--line2);color:var(--soft);margin-left:auto}
+.copy:hover{border-color:var(--cyan);color:var(--cyan)}
+.exits{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line)}
+.exits div{padding:14px 18px;font-size:.84rem;color:var(--muted)}
+.exits div+div{border-left:1px solid var(--line)}
+.exits b{font-family:var(--m);color:var(--ink);margin-right:6px}
+
+/* trust */
+.trust{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.trust .card{padding:26px}
+.trust h3{font-size:1rem;margin:4px 0 8px;letter-spacing:-.02em}
+.trust p{color:var(--muted);font-size:.92rem}
+.trust .ic{background:rgba(79,240,180,.1);border-color:rgba(79,240,180,.3);color:var(--mint)}
+
+/* beta / feedback */
+.fb{position:relative;padding:56px;border-radius:28px;overflow:hidden;border:1px solid rgba(255,181,71,.3);background:radial-gradient(600px 300px at 90% 0%,rgba(255,181,71,.14),transparent 70%),linear-gradient(140deg,rgba(79,124,255,.14),rgba(10,14,25,.9) 60%)}
+.fb .grid{display:grid;grid-template-columns:1.2fr .8fr;gap:40px;align-items:center}
+.fb h2{margin-top:16px}
+.fb ul{list-style:none;padding:0;display:flex;flex-direction:column;gap:12px}
+.fb li a{display:flex;align-items:center;gap:14px;padding:16px 18px;border-radius:14px;border:1px solid var(--line2);background:rgba(5,7,13,.55);font-weight:700;transition:.25s}
+.fb li a:hover{border-color:var(--amber);transform:translateX(4px)}
+.fb li a small{display:block;font-weight:500;color:var(--muted);font-size:.84rem}
+.fb li a i{font-style:normal;font-size:1.3rem}
+.road{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+.road span{font-family:var(--m);font-size:.74rem;padding:6px 11px;border-radius:999px;border:1px solid var(--line2);color:var(--muted)}
+.road span.on{border-color:var(--amber);color:var(--amber)}
+
+/* faq */
+.faq{display:grid;grid-template-columns:.8fr 1.2fr;gap:40px;align-items:start}
+details{border-bottom:1px solid var(--line)}
+summary{list-style:none;cursor:pointer;padding:20px 40px 20px 0;font-weight:700;font-size:1.02rem;position:relative}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";position:absolute;right:6px;top:16px;font-family:var(--m);font-size:1.3rem;color:var(--cyan);transition:transform .3s}
+details[open] summary::after{transform:rotate(45deg)}
+details p{padding:0 0 20px;color:var(--soft);font-size:.96rem;max-width:44em}
+details a{color:var(--cyan);text-decoration:underline;text-underline-offset:3px}
+
+/* final */
+.final{text-align:center;padding:80px 24px;border-radius:30px;border:1px solid var(--line2);position:relative;overflow:hidden;background:linear-gradient(160deg,rgba(79,124,255,.18),rgba(107,92,255,.08) 50%,rgba(56,225,255,.12))}
+.final::before{content:"";position:absolute;left:50%;top:50%;width:160%;aspect-ratio:1;translate:-50% -50%;background:conic-gradient(from var(--a,0deg),transparent 0 50%,rgba(56,225,255,.14) 72%,transparent 100%);animation:spin 8s linear infinite;pointer-events:none}
+@property --a{syntax:'<angle>';inherits:false;initial-value:0deg}
+@keyframes spin{to{--a:360deg}}
+.final>*{position:relative}
+.final h2{font-size:clamp(2.2rem,6vw,4.2rem);max-width:13em;margin-inline:auto}
+.final .lede{margin:0 auto}
+.final .cta{justify-content:center}
+footer{padding:34px 0 44px;color:var(--muted);font-size:.88rem}
+footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px}
+footer a{color:var(--soft)}
+footer a:hover{color:var(--cyan)}
+
+/* reveal */
+.js .rv{opacity:0;transform:translateY(26px);filter:blur(8px);transition:opacity .9s ease,transform .9s cubic-bezier(.16,1,.3,1),filter .9s ease;transition-delay:var(--dl,0s)}
+.js .rv.in{opacity:1;transform:none;filter:none}
+
+@media (max-width:1020px){
+  .hero-grid,.sim,.reports,.cli,.faq,.fb .grid{grid-template-columns:1fr}
+  .hero{padding-top:110px}
+  .stage{max-width:640px;margin:20px auto 0;width:100%}
+  .bento{grid-template-columns:repeat(2,1fr)}
+  .b-wide,.b-mid,.b-full{grid-column:span 1}
+  .b-full{grid-column:span 2}
+  .steps,.trust{grid-template-columns:repeat(2,1fr)}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .exp{grid-template-columns:1fr}
+  .list{flex-direction:row;overflow-x:auto;max-height:none;padding:8px}
+  .list button{white-space:nowrap;flex:none}
+  .nav ul{display:none;position:absolute;top:calc(100% + 8px);left:0;right:0;flex-direction:column;padding:10px;border-radius:16px;background:rgba(8,11,20,.97);border:1px solid var(--line)}
+  .nav.open ul{display:flex}
+  .menu{display:grid}
+  .nav .dl{margin-left:0}
+}
+@media (max-width:640px){
+  section{padding:68px 0}
+  .wrap{width:calc(100% - 32px)}
+  .why,.bento,.steps,.trust{grid-template-columns:1fr}
+  .b-full{grid-column:span 1}
+  .fb{padding:30px 22px}
+  .nav .dl{display:none}
+  .cta .btn{flex:1 1 100%}
+  .c2{right:-6px}.c4{left:-6px}.c1{left:-6px}
+  .chip{font-size:.7rem;padding:7px 10px}
+  .device{transform:rotateY(-6deg) rotateX(5deg)}
+  .exits{grid-template-columns:1fr}
+  .exits div+div{border-left:0;border-top:1px solid var(--line)}
+  .kpis{grid-template-columns:repeat(3,1fr)}
+  .meter{gap:14px;padding:14px}
+  .ring{width:76px;height:76px}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .js .rv{opacity:1;transform:none;filter:none}
+  .hero h1 .ln>span{transform:none}
+  .chip,.stamp{opacity:1;translate:0 0;scale:1}
+}
+</style>
+</head>
+<body>
+<script>document.documentElement.classList.add('js')</script>
+<a class="skip" href="#main">Skip to content</a>
+<canvas id="field" aria-hidden="true"></canvas>
+<div class="aura" aria-hidden="true"></div>
+<div class="paper" aria-hidden="true"></div>
+
+<nav class="nav" id="nav" aria-label="Primary">
+  <a class="logo" href="#top"><img src="img/logo.png" alt="" width="30" height="30">DeviceDossier</a>
+  <ul id="links">
+    <li><a href="#demo">Live demo</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#collects">What it collects</a></li>
+    <li><a href="#start">Get started</a></li>
+    <li><a href="#faq">FAQ</a></li>
+  </ul>
+  <a class="dl" href="https://github.com/FlickerDampa/DeviceDossier/releases" target="_blank" rel="noopener">Download beta</a>
+  <button class="menu" id="menu" aria-label="Toggle menu" aria-expanded="false" aria-controls="links"><i></i></button>
+</nav>
+
+<main id="main">
+<header class="hero" id="top">
+  <div class="wrap hero-grid">
+    <div>
+      <a class="beta" href="#feedback"><b>BETA</b>Free, open source and evolving. Your feedback shapes it →</a>
+      <h1><span class="ln"><span>Know every PC.</span></span><span class="ln"><span>In one pass.</span></span></h1>
+      <p class="lede">DeviceDossier is a portable Windows audit tool. Run it from a USB drive and get a complete, readable dossier of any PC: hardware, Windows, software, mapped drives and security, as Excel, HTML and XML reports.</p>
+      <div class="cta">
+        <a class="btn pri" href="https://github.com/FlickerDampa/DeviceDossier/releases" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 21h16"/></svg>Download the beta</a>
+        <a class="btn" href="sample-report.html" target="_blank" rel="noopener">Open a sample report</a>
+      </div>
+      <ul class="facts">
+        <li>Windows 10 &amp; 11</li><li>Nothing to install</li><li>Read-only</li><li>Works offline</li><li>MIT licensed</li>
+      </ul>
+    </div>
+    <div class="stage" id="stage">
+      <div class="device" id="device">
+        <div class="screen"><div class="win">
+          <img src="img/summary-dark.webp" alt="DeviceDossier HTML report summary for a demo laptop" width="1600" height="1000" fetchpriority="high">
+          <div class="scan" aria-hidden="true"></div>
+          <span class="demo">DEMO DATA</span>
+        </div></div>
+        <div class="chip c1" aria-hidden="true"><i></i>BitLocker <span>C: · On</span></div>
+        <div class="chip c2" aria-hidden="true"><i></i>Secure Boot <span>Enabled</span></div>
+        <div class="chip c3" aria-hidden="true"><i></i>Storage health <span>100%</span></div>
+        <div class="chip a c4" aria-hidden="true"><i></i>Mapped drive <span>Unrecognised server</span></div>
+        <div class="stamp" aria-hidden="true">BETA</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="ticker" aria-hidden="true"><div class="row" id="ticker"></div></div>
+
+<section id="why">
+  <div class="wrap">
+    <div class="head rv">
+      <span class="eyebrow">The problem</span>
+      <h2>Auditing a PC shouldn't take <em>a dozen windows.</em></h2>
+      <p class="lede">Checking an office PC usually means clicking through System Information, Device Manager, winver, BitLocker settings and a stack of registry keys, then doing it all again on the next machine.</p>
+    </div>
+    <div class="why">
+      <article class="card before rv">
+        <span class="m tagx">// before</span>
+        <h3>The manual way</h3>
+        <ul>
+          <li>Open five different Windows tools per machine</li>
+          <li>Copy serial numbers and specs by hand</li>
+          <li>Guess at mapped drives for users who aren't signed in</li>
+          <li>Every report looks different, so nothing compares</li>
+          <li>Product keys end up in plain text: <span class="redact" tabindex="0" title="Masked by DeviceDossier by default">XXXXX-XXXXX-7J4QK</span></li>
+        </ul>
+      </article>
+      <article class="card after rv" style="--dl:.1s">
+        <span class="m tagx">// with DeviceDossier</span>
+        <h3>One pass, one dossier</h3>
+        <ul>
+          <li>Every area collected in a single run</li>
+          <li>Real serials, including NVMe drives and monitors</li>
+          <li>Mapped drives for every local profile, even logged-off users</li>
+          <li>The same layout every time, ready to merge into an inventory</li>
+          <li>Product keys masked by default</li>
+        </ul>
+      </article>
+    </div>
+    <div class="stats rv">
+      <div class="stat"><strong data-n="16">16</strong><span>report sections</span></div>
+      <div class="stat"><strong data-n="3">3</strong><span>report formats</span></div>
+      <div class="stat"><strong data-n="0">0</strong><span>things to install</span></div>
+      <div class="stat"><strong data-n="0">0</strong><span>bytes sent over the network</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="demo">
+  <div class="wrap">
+    <div class="head rv">
+      <span class="eyebrow">Try it here</span>
+      <h2>Watch a <em>full audit</em> run.</h2>
+      <p class="lede">A simulation of one DeviceDossier pass. Switch modes to see what changes without administrator rights.</p>
+    </div>
+    <div class="sim">
+      <div class="card ctrl rv">
+        <div class="switch" role="group" aria-label="Run mode">
+          <button type="button" id="mAdmin" aria-pressed="true">Administrator</button>
+          <button type="button" id="mLimited" aria-pressed="false">Limited mode</button>
+        </div>
+        <p class="note" id="modeNote"><b>Administrator mode</b> reads everything, including BitLocker, TPM details, SSD wear and other users' saved drives.</p>
+        <div class="meter" aria-live="polite">
+          <div class="ring"><svg viewBox="0 0 96 96" aria-hidden="true"><defs><linearGradient id="rg" x1="0" x2="1"><stop offset="0" stop-color="#4f7cff"/><stop offset=".5" stop-color="#6b5cff"/><stop offset="1" stop-color="#38e1ff"/></linearGradient></defs><circle class="bg" cx="48" cy="48" r="42"/><circle class="fg" id="ringFg" cx="48" cy="48" r="42"/></svg><b id="pct">0%</b></div>
+          <div class="kpis"><div><strong id="kDone">0/16</strong>sections</div><div class="pa"><strong id="kPart">0</strong>need admin</div><div><strong id="kTime">0.0s</strong>elapsed</div></div>
+        </div>
+        <div class="outs" id="outs"><span class="lbl">Reports</span></div>
+        <button class="btn pri" type="button" id="run"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15l13-7.5z"/></svg>Run full audit</button>
+        <p class="note m" style="font-size:.76rem">Simulated timings. Real runs vary by PC.</p>
+      </div>
+      <div class="card term rv" style="--dl:.1s">
+        <div class="bar"><i></i><i></i><i></i><em id="termTitle">DeviceDossier · DEMO-LAPTOP-01 · administrator</em></div>
+        <div class="rows" id="rows" aria-live="polite"></div>
+        <div class="sum" id="sum">Ready. Press Run full audit.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="features">
+  <div class="wrap">
+    <div class="head rv">
+      <span class="eyebrow">Features</span>
+      <h2>Small tool. <em>Serious detail.</em></h2>
+      <p class="lede">Built for the person auditing ten laptops on a Friday, and for the admin rolling it out to a whole fleet.</p>
+    </div>
+    <div class="bento">
+      <article class="card b-wide rv">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="14" rx="2"/><path d="M10 16v3a2 2 0 0 0 4 0v-3M10 6h4"/></svg></div>
+        <h3>Portable by design</h3>
+        <p>One DeviceDossier.exe for Windows 10 and 11. It runs on .NET Framework 4.8, which ships with Windows, so there's nothing to install and nothing left behind.</p>
+      </article>
+      <article class="card b-wide rv" style="--dl:.06s">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg></div>
+        <h3>Three report formats</h3>
+        <p>A formatted Excel sheet with no Office needed, a self-contained HTML report, and structured XML with a published schema.</p>
+        <div class="fmt"><span>.xlsx</span><span>.html</span><span>.xml</span></div>
+      </article>
+      <article class="card b-mid rv">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg></div>
+        <h3>Asset record</h3>
+        <p>Add an asset tag, assigned user, location and notes at audit time, and they appear at the top of the report.</p>
+      </article>
+      <article class="card b-mid rv" style="--dl:.06s">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h5l2 3h11v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M3 7V5a2 2 0 0 1 2-2h4l2 2"/></svg></div>
+        <h3>Save anywhere</h3>
+        <p>Desktop, any USB drive as it's plugged in, or a local, mapped or network folder. It warns you if a folder syncs to OneDrive.</p>
+      </article>
+      <article class="card b-mid rv" style="--dl:.12s">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 4v5"/></svg></div>
+        <h3>Built-in viewer</h3>
+        <p>Browse every area in searchable, copyable tabs, and reopen saved XML reports from any PC to export them again.</p>
+      </article>
+      <article class="card b-mid rv">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m4 17 6-6-6-6M12 19h8"/></svg></div>
+        <h3>Silent command line</h3>
+        <p>Run a full audit with no window from scheduled tasks, Group Policy, Intune or an RMM tool.</p>
+      </article>
+      <article class="card b-mid rv" style="--dl:.06s">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor"/></svg></div>
+        <h3>Light, dark and High Contrast</h3>
+        <p>Follows your Windows theme, title bar included, or choose one in Settings.</p>
+        <div class="themes" aria-hidden="true"><i></i><i></i><i></i></div>
+      </article>
+      <article class="card b-mid rv" style="--dl:.12s">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></div>
+        <h3>Fault-tolerant</h3>
+        <p>A stuck section is marked as an error instead of freezing the whole audit.</p>
+      </article>
+      <article class="card b-full rv">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></div>
+        <h3>Settings that travel with it</h3>
+        <p>Set default formats, known file servers, excluded disks and time limits once. Settings save next to the exe, so they follow your USB drive, and you can export them to set up other copies the same way. Known servers let it flag mapped drives that point somewhere unexpected.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section id="collects">
+  <div class="wrap">
+    <div class="head rv">
+      <span class="eyebrow">What it collects</span>
+      <h2>Sixteen sections. <em>Zero guesswork.</em></h2>
+      <p class="lede">Everything comes straight from Windows: WMI, the registry, and the storage and display drivers, plus nvidia-smi when an NVIDIA driver is present. No third-party tools.</p>
+    </div>
+    <div class="exp rv">
+      <div class="card list" role="tablist" aria-label="Report sections" id="secList"></div>
+      <div class="card panel" role="tabpanel" id="secPanel" aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+<section id="reports">
+  <div class="wrap reports">
+    <div class="shot rv" id="shot">
+      <img src="img/security-dark.webp" alt="Security tab of a DeviceDossier HTML report in dark mode, showing demo data" width="1600" height="1000" loading="lazy">
+      <img class="alt" src="img/summary-light.webp" alt="Summary of a DeviceDossier HTML report in light mode, showing demo data" width="1600" height="1000" loading="lazy">
+      <button class="toggle" type="button" id="flip">light / dark</button>
+    </div>
+    <div>
+      <div class="head rv" style="margin-bottom:24px">
+        <span class="eyebrow">The reports</span>
+        <h2>Readable by people. <em>Usable by tools.</em></h2>
+      </div>
+      <div class="rlist">
+        <article class="card rv"><h3><span class="ext" style="color:#ff9b5b">HTML</span>For reading and sharing</h3><p>One self-contained page with tabs, search across the whole report, sortable tables, dark mode and a print or PDF layout. Works offline in any browser.</p></article>
+        <article class="card rv"><h3><span class="ext" style="color:#5be38f">XLSX</span>For inventories</h3><p>One formatted sheet, written natively, so Excel isn't needed to create it. The layout is the same every time, so audits merge cleanly.</p></article>
+        <article class="card rv"><h3><span class="ext" style="color:var(--cyan)">XML</span>For automation</h3><p>Structured data with a published schema, ready to import into other tools or reopen in DeviceDossier.</p></article>
+      </div>
+      <div class="cta rv"><a class="btn" href="sample-report.html" target="_blank" rel="noopener">Explore the live sample report →</a></div>
+    </div>
+  </div>
+</section>
+
+<section id="start">
+  <div class="wrap">
+    <div class="head rv">
+      <span class="eyebrow">Get started</span>
+      <h2>From download to dossier <em>in minutes.</em></h2>
+    </div>
+    <div class="steps">
+      <article class="card rv"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 21h16"/></svg></div><h3>Download</h3><p>Get <code>DeviceDossier.zip</code> from Releases and check it against <code>SHA256SUMS.txt</code>.</p></article>
+      <article class="card rv" style="--dl:.06s"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="14" rx="2"/><path d="M10 16v3a2 2 0 0 0 4 0v-3"/></svg></div><h3>Extract</h3><p>Unzip it anywhere, such as a USB drive you carry between machines.</p></article>
+      <article class="card rv" style="--dl:.12s"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><h3>Run</h3><p>Double-click <code>DeviceDossier.exe</code> on the PC to audit and accept the administrator prompt.</p></article>
+      <article class="card rv" style="--dl:.18s"><div class="ic"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l13-7.5z"/></svg></div><h3>Audit</h3><p>Pick where to save and which formats, add asset details if you like, then click Run full audit.</p></article>
+    </div>
+    <div class="card warn rv">
+      <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0zM12 9v4M12 17h.01"/></svg></div>
+      <p><b>Seeing "Windows protected your PC"?</b> Beta builds aren't code-signed yet, so SmartScreen may warn you. Choose <b>More info → Run anyway</b>, or build it from source. Because the tool reads product keys, other users' profiles and browser data, some antivirus products may flag it as a potentially unwanted tool. Check the SHA-256 against the release, and report false positives to your vendor, for example through <a href="https://www.microsoft.com/wdsi/filesubmission" target="_blank" rel="noopener">Microsoft's submission portal</a>.</p>
+    </div>
+  </div>
+</section>
+
+<section id="cli">
+  <div class="wrap cli">
+    <div class="rv">
+      <span class="eyebrow">For IT teams</span>
+      <h2>Audit a fleet <em>without touching it.</em></h2>
+      <p class="lede">The silent mode runs a full audit with no window and never prompts for elevation. Run it as an administrator or as SYSTEM for complete results.</p>
+      <div class="pills"><span>Scheduled tasks</span><span>Group Policy</span><span>Intune</span><span>RMM tools</span><span>Shared settings file</span></div>
+      <p class="note">Collect every PC's audit on a share, with a log, an asset record and only the formats you need.</p>
+    </div>
+    <div class="card code rv" style="--dl:.1s">
+      <div class="term"><div class="bar"><i></i><i></i><i></i><em>PowerShell</em><button class="copy" type="button" data-copy="c1">copy</button></div></div>
+      <pre id="c1"><span class="k4"># Collect each PC's audit on a network share</span>
+<span class="k1">&amp;</span> <span class="k2">"\\server\it\DeviceDossier\DeviceDossier.exe"</span> <span class="k3">--silent</span> <span class="k3">--formats</span> xlsx,xml <span class="k3">--output</span> <span class="k2">"\\server\it\Audits\$env:COMPUTERNAME"</span> <span class="k1">|</span> Out-Null
+
+<span class="k4"># Options</span>
+<span class="k3">--output</span>     <span class="k4">folder for the reports</span>
+<span class="k3">--formats</span>    <span class="k4">xlsx, html, xml or all</span>
+<span class="k3">--settings</span>   <span class="k4">use a shared settings file</span>
+<span class="k3">--skip</span>       <span class="k4">drives,security,patches,software,extensions</span>
+<span class="k3">--asset-tag</span>  <span class="k4">plus --assigned-to, --location, --notes</span>
+<span class="k3">--log</span>        <span class="k4">append progress to a log file</span></pre>
+      <div class="exits"><div><b>0</b>reports saved</div><div><b>1</b>audit failed</div><div><b>2</b>invalid arguments</div></div>
+    </div>
+  </div>
+</section>
+
+<section id="trust">
+  <div class="wrap">
+    <div class="head rv">
+      <span class="eyebrow">Trust and privacy</span>
+      <h2>It looks. <em>It never touches.</em></h2>
+      <p class="lede">An audit tool sees sensitive data, so DeviceDossier is built to be predictable and inspectable.</p>
+    </div>
+    <div class="trust">
+      <article class="card rv"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div><h3>Read-only</h3><p>It never changes settings on the PC it audits.</p></article>
+      <article class="card rv" style="--dl:.06s"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l22 22M16.7 16.7A10 10 0 0 1 12 18c-4 0-7.4-2.5-9-6a10 10 0 0 1 2.3-3.3M9.9 4.2A9 9 0 0 1 12 4c4 0 7.4 2.5 9 6a10 10 0 0 1-1.6 2.5"/></svg></div><h3>Offline</h3><p>It sends nothing over the network. Reports stay wherever you save them.</p></article>
+      <article class="card rv" style="--dl:.12s"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div><h3>Keys masked</h3><p>The Windows product key is masked by default. You choose whether to show it.</p></article>
+      <article class="card rv"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></svg></div><h3>Safe with other profiles</h3><p>Logged-off users' profiles are opened privately and read-only, so a failed read can't affect their next sign-in.</p></article>
+      <article class="card rv" style="--dl:.06s"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m16 18 6-6-6-6M8 6l-6 6 6 6"/></svg></div><h3>Open source</h3><p>MIT licensed. Read every line on GitHub, or build it yourself.</p></article>
+      <article class="card rv" style="--dl:.12s"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div><h3>Checked releases</h3><p>Every release ships with SHA-256 checksums, and automated tests run a real silent audit on each build.</p></article>
+    </div>
+  </div>
+</section>
+
+<section id="feedback">
+  <div class="wrap">
+    <div class="fb rv">
+      <div class="grid">
+        <div>
+          <a class="beta" href="https://github.com/FlickerDampa/DeviceDossier/releases" target="_blank" rel="noopener"><b>BETA</b>A work in progress</a>
+          <h2>Help make auditing <em>simple, clear and detailed</em> for everyone.</h2>
+          <p class="lede">DeviceDossier is in public beta. Some things will be rough, and that's where you come in. Whether you audit one home PC or a whole office, every bug report, idea and "this confused me" helps shape what comes next.</p>
+          <div class="road" aria-label="Release stage"><span>Prototype</span><span class="on">Public beta · you are here</span><span>Signed builds</span><span>1.0</span></div>
+        </div>
+        <ul>
+          <li><a href="https://github.com/FlickerDampa/DeviceDossier/issues/new" target="_blank" rel="noopener"><i aria-hidden="true">🐞</i><span>Report a bug<small>Something broke or looked wrong</small></span></a></li>
+          <li><a href="https://github.com/FlickerDampa/DeviceDossier/issues/new" target="_blank" rel="noopener"><i aria-hidden="true">💡</i><span>Suggest a feature<small>What should a dossier include?</small></span></a></li>
+          <li><a href="https://github.com/FlickerDampa/DeviceDossier" target="_blank" rel="noopener"><i aria-hidden="true">⭐</i><span>Star it on GitHub<small>Helps others find the project</small></span></a></li>
+          <li><a href="mailto:ahmedrafeequu@gmail.com?subject=DeviceDossier%20feedback"><i aria-hidden="true">✉️</i><span>Email feedback<small>Prefer not to use GitHub? Write in directly</small></span></a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap faq">
+    <div class="rv">
+      <span class="eyebrow">FAQ</span>
+      <h2>Good <em>questions.</em></h2>
+      <p class="lede">Something else on your mind? Ask it on GitHub, and the answer may end up here.</p>
+    </div>
+    <div class="rv">
+      <details><summary>Is DeviceDossier free?</summary><p>Yes. It's free and open source under the MIT licence, including for use at work.</p></details>
+      <details><summary>Does it change anything on the PC?</summary><p>No. It only reads information, and it never changes settings on the PC it audits. Reports are written only to the folder you choose.</p></details>
+      <details><summary>Does it need the internet?</summary><p>No. It works fully offline and sends nothing over the network.</p></details>
+      <details><summary>Which Windows versions does it support?</summary><p>Windows 10 and Windows 11. It uses .NET Framework 4.8, which is already part of Windows.</p></details>
+      <details><summary>Do I need administrator rights?</summary><p>It asks for them at startup, but you can say no. In limited mode it still reads most things and clearly marks what it couldn't: BitLocker status, SSD wear, some battery details, TPM details, and other users' saved drives, network locations and browser extensions.</p></details>
+      <details><summary>Why does Windows or my antivirus warn me about it?</summary><p>Beta builds aren't code-signed yet, which triggers SmartScreen. Some antivirus products also flag tools that read product keys and browser data. Verify the download with the SHA-256 checksum from the release, and see the <a href="https://github.com/FlickerDampa/DeviceDossier" target="_blank" rel="noopener">README</a> for details.</p></details>
+      <details><summary>Is the report sensitive?</summary><p>Yes. It can include serial numbers, network addresses, user names, server paths and installed software. Only audit devices you're authorised to audit, and store reports somewhere access-controlled.</p></details>
+      <details><summary>How do I give feedback?</summary><p>Open an issue on <a href="https://github.com/FlickerDampa/DeviceDossier/issues/new" target="_blank" rel="noopener">GitHub</a> or email <a href="mailto:ahmedrafeequu@gmail.com?subject=DeviceDossier%20feedback">ahmedrafeequu@gmail.com</a>. All feedback is welcome during the beta.</p></details>
+    </div>
+  </div>
+</section>
+
+<section id="get">
+  <div class="wrap">
+    <div class="final rv">
+      <span class="eyebrow">Public beta</span>
+      <h2>Your next audit can take <em>one click.</em></h2>
+      <p class="lede">Free, portable and open source. Try it on your own PC and tell us what you think.</p>
+      <div class="cta">
+        <a class="btn pri" href="https://github.com/FlickerDampa/DeviceDossier/releases" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 21h16"/></svg>Download the beta</a>
+        <a class="btn" href="https://github.com/FlickerDampa/DeviceDossier" target="_blank" rel="noopener">View source on GitHub</a>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>DeviceDossier · MIT licence · built by <a href="https://flickerdampa.github.io/">FlickerDampa</a></span>
+    <span><a href="https://github.com/FlickerDampa/DeviceDossier">GitHub</a> · <a href="https://github.com/FlickerDampa/DeviceDossier/releases">Releases</a> · <a href="https://github.com/FlickerDampa/DeviceDossier/issues">Feedback</a></span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var calm=matchMedia('(prefers-reduced-motion: reduce)').matches,fine=matchMedia('(hover:hover) and (pointer:fine)').matches;
+  var $=function(s,r){return (r||document).querySelector(s)},$$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+  requestAnimationFrame(function(){setTimeout(function(){document.documentElement.classList.add('ready')},80)});
+
+  var S=[
+    ['0','Asset record','asset tag, location',['Asset tag','Assigned to','Location / department','Notes'],'Only included when you enter it.',''],
+    ['1','Device','model, BIOS, UUID',['Chassis type','Name','Manufacturer','Model and model name','Domain / workgroup','BIOS serial','BIOS version and date','System UUID','SMBIOS asset tag'],'',''],
+    ['2','Windows','edition, build, activation',['Edition','Version','Display version (e.g. 25H2)','Full build','Architecture','Install date','Last boot','Activation status','Product key (masked by default)','Channel'],'',''],
+    ['3','CPU','cores, clocks, cache',['Model','Cores / threads','Clock speeds','CPU ID','Socket','Architecture','L2 / L3 cache'],'',''],
+    ['4','Memory','every module',['Capacity','Manufacturer','Part number','Serial','Speed','Type','Slot and bank','Form factor'],'Listed for every installed module.',''],
+    ['5','Graphics','real VRAM, drivers',['Name','Real VRAM (not capped at 4 GB)','Driver version and date','Resolution','Refresh rate','PCI IDs','VBIOS version','GPU UUID on NVIDIA'],'',''],
+    ['6','Storage','serials, health',['Model','Real serial (incl. NVMe)','Size','Bus type (NVMe / SATA / USB)','SSD or HDD','Partitions','Firmware','Wear-based health'],'','SSD wear counters'],
+    ['6b','Motherboard','board details',['Manufacturer','Product','Serial','Version','Status'],'',''],
+    ['6c','Power','battery, PSU',['Battery health','Design vs full-charge capacity','Charge and status','PSU on desktops'],'','battery capacity on some laptops'],
+    ['7','Network','MAC, IP, DNS',['Physical adapters','Virtual adapters with an address','MAC','IP','Subnet','Gateway','DHCP','DNS'],'',''],
+    ['8','Mapped drives','every user profile',['Mapped drives','Saved network locations','Every local user profile','Logged-off users','Session-only mappings','Checked against known servers'],'Includes users who aren\u2019t signed in.','other users\u2019 drive mappings'],
+    ['9','Security','Defender, BitLocker',['Antivirus / EDR','Microsoft Defender status','BitLocker per volume','Key protectors','Latest security update','Feature, quality and general updates','Local Administrators group'],'','BitLocker status'],
+    ['10','Software','installed programs',['64-bit programs','32-bit programs','Current user\u2019s programs','Version','Publisher','Install date','Install location'],'Each installed version is listed separately.',''],
+    ['10b','Extensions','every browser profile',['Chrome','Edge','Opera','Firefox','Every user profile'],'','other users\u2019 extensions'],
+    ['11','Displays','monitors, serials',['Manufacturer','Model','Serial number','Manufacture date','Size','Connection type'],'',''],
+    ['12','Security baseline','Secure Boot, TPM',['UEFI / legacy BIOS','Secure Boot','TPM','Firewall per profile','UAC','Remote Desktop','SMBv1','Guest account','Defender signatures','Pending restart'],'','TPM details']
+  ];
+
+  /* ticker */
+  var tk=$('#ticker'),words=[];S.forEach(function(s){words.push('<b>'+s[1]+'</b> '+s[3].slice(0,3).join(' · '))});
+  tk.innerHTML=words.concat(words).map(function(w){return '<span>'+w+'</span>'}).join('');
+
+  /* explorer */
+  var list=$('#secList'),panel=$('#secPanel');
+  function show(i,focus){
+    var s=S[i];
+    $$('button',list).forEach(function(b,j){b.setAttribute('aria-selected',j===i);b.tabIndex=j===i?0:-1});
+    panel.innerHTML='<span class="k">SECTION '+s[0]+'</span><h3>'+s[1]+'</h3><div class="fields">'+s[3].map(function(f,j){return '<span style="--i:'+j+'">'+f+'</span>'}).join('')+'</div>'+
+      (s[4]?'<p class="note" style="margin-top:18px">'+s[4]+'</p>':'')+
+      '<p class="adm'+(s[5]?' show':'')+'">Needs administrator rights: '+s[5]+'.</p>'+
+      '<p class="src">Read directly from Windows. No third-party tools.</p>';
+    if(focus) list.children[i].focus();
+  }
+  S.forEach(function(s,i){
+    var b=document.createElement('button');b.type='button';b.setAttribute('role','tab');b.setAttribute('aria-controls','secPanel');
+    b.innerHTML='<span>'+s[0]+'</span>'+s[1];b.addEventListener('click',function(){show(i)});list.appendChild(b);
+  });
+  list.addEventListener('keydown',function(e){
+    var i=$$('button',list).indexOf(document.activeElement);if(i<0)return;
+    if(e.key==='ArrowDown'||e.key==='ArrowRight'){e.preventDefault();show(Math.min(S.length-1,i+1),true)}
+    if(e.key==='ArrowUp'||e.key==='ArrowLeft'){e.preventDefault();show(Math.max(0,i-1),true)}
+  });
+  show(9);
+
+  /* simulator */
+  var rows=$('#rows'),sum=$('#sum'),admin=true,timer=[],tick=0;
+  var now=new Date(),pad=function(n){return ('0'+n).slice(-2)},stamp=pad(now.getDate())+pad(now.getMonth()+1)+now.getFullYear()+'_1030',base='IT_Audit_DEMO-LAPTOP-01_'+stamp;
+  $('#outs').insertAdjacentHTML('beforeend',[['x','xlsx'],['h','html'],['m2','xml']].map(function(f){return '<div class="f '+f[0]+'" data-f="'+f[1]+'"><i>'+f[1].toUpperCase()+'</i><span>'+base+'.'+f[1]+'</span><em>✓ saved</em></div>'}).join(''));
+  function meter(done,part,secs){
+    $('#ringFg').style.strokeDashoffset=264-264*done/S.length;$('#pct').textContent=Math.round(100*done/S.length)+'%';
+    $('#kDone').textContent=done+'/'+S.length;$('#kPart').textContent=part;$('#kTime').textContent=secs.toFixed(1)+'s';
+  }
+  function build(){
+    rows.innerHTML=S.map(function(s,i){return '<div class="r" data-i="'+i+'"><span class="n">'+s[0]+'</span><span class="t">'+s[1]+'<small>'+s[2]+'</small></span><span class="s">queued</span><span class="why">requires administrator: '+s[5]+'</span><div class="pb"><i></i></div></div>'}).join('');
+    sum.textContent='Ready. Press Run full audit.';meter(0,0,0);$$('#outs .f').forEach(function(f){f.classList.remove('ok')});
+  }
+  function stop(){timer.forEach(clearTimeout);timer=[];cancelAnimationFrame(tick)}
+  function setMode(a){
+    admin=a;$('#mAdmin').setAttribute('aria-pressed',a);$('#mLimited').setAttribute('aria-pressed',!a);
+    $('#termTitle').textContent='DeviceDossier · DEMO-LAPTOP-01 · '+(a?'administrator':'limited mode');
+    $('#modeNote').innerHTML=a?'<b>Administrator mode</b> reads everything, including BitLocker, TPM details, SSD wear and other users’ saved drives.':'<b>Limited mode</b> still reads most of the PC, and clearly marks anything that needs administrator rights instead of guessing.';
+    stop();build();
+  }
+  function run(){
+    stop();build();
+    var t=0,done=0,part=0,t0=performance.now(),live=true;
+    (function clock(){if(!live)return;meter(done,part,(performance.now()-t0)/1000);tick=requestAnimationFrame(clock)})();
+    sum.textContent='Auditing DEMO-LAPTOP-01…';
+    $$('.r',rows).forEach(function(r,i){
+      var d=calm?0:180+Math.round(((i*37)%9)*45);
+      timer.push(setTimeout(function(){r.classList.add('go');r.style.setProperty('--dur',(d/1000)+'s');r.querySelector('.s').textContent='reading…';sum.textContent='Reading '+S[i][1].toLowerCase()+' ('+(i+1)+' of '+S.length+')…'},t));
+      t+=d;
+      timer.push(setTimeout(function(){
+        var p=!admin&&S[i][5];r.classList.remove('go');r.classList.add('done');done++;if(p){r.classList.add('part');part++}
+        r.querySelector('.s').textContent=p?'partial':'✓ '+(d/1000+.1).toFixed(1)+'s';
+      },t));
+    });
+    $$('#outs .f').forEach(function(f,k){timer.push(setTimeout(function(){f.classList.add('ok')},t+150+k*220))});
+    timer.push(setTimeout(function(){
+      live=false;meter(done,part,(performance.now()-t0)/1000);
+      sum.innerHTML='<b>✓ Audit complete</b> · '+S.length+' sections · '+(part?part+' need administrator · ':'')+'3 reports saved · 0 bytes sent';
+    },t+150+3*220));
+  }
+  $('#mAdmin').addEventListener('click',function(){setMode(true)});
+  $('#mLimited').addEventListener('click',function(){setMode(false)});
+  $('#run').addEventListener('click',run);
+  build();
+
+  /* report light/dark */
+  $('#flip').addEventListener('click',function(){$('#shot').classList.toggle('flip')});
+
+  /* copy */
+  $$('.copy').forEach(function(b){b.addEventListener('click',function(){
+    var t=document.getElementById(b.dataset.copy).textContent.split('\n')[1];
+    if(navigator.clipboard&&window.isSecureContext) navigator.clipboard.writeText(t).then(function(){b.textContent='copied';setTimeout(function(){b.textContent='copy'},1800)});
+  })});
+
+  /* reveal, counters, auto-run demo */
+  function count(el){
+    var n=+el.dataset.n;if(calm||!n)return;var t0=performance.now();
+    (function k(t){var p=Math.min((t-t0)/1100,1);el.textContent=p<.75?Math.floor(Math.random()*(n*2+5)):Math.round(n*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(k)})(t0);
+  }
+  var ran=false;
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){
+      if(!e.isIntersecting)return;e.target.classList.add('in');io.unobserve(e.target);
+      $$('[data-n]',e.target).forEach(count);
+    })},{threshold:.12});
+    $$('.rv').forEach(function(el){io.observe(el)});
+    new IntersectionObserver(function(es,o){es.forEach(function(e){if(e.isIntersecting&&!ran){ran=true;setTimeout(run,500);o.disconnect()}})},{threshold:.45}).observe($('#rows'));
+    var links=$$('.nav li a');
+    var spy=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting)links.forEach(function(a){a.classList.toggle('on',a.getAttribute('href')==='#'+e.target.id)})})},{rootMargin:'-45% 0px -50% 0px'});
+    $$('section[id]').forEach(function(s){spy.observe(s)});
+  } else {$$('.rv').forEach(function(el){el.classList.add('in')})}
+
+  /* nav */
+  var nav=$('#nav'),menu=$('#menu');
+  menu.addEventListener('click',function(){var o=nav.classList.toggle('open');menu.setAttribute('aria-expanded',o)});
+  $$('.nav li a').forEach(function(a){a.addEventListener('click',function(){nav.classList.remove('open');menu.setAttribute('aria-expanded',false)})});
+  function prog(){var h=document.documentElement,m=h.scrollHeight-h.clientHeight;nav.style.setProperty('--p',m>0?h.scrollTop/m:0)}
+  addEventListener('scroll',prog,{passive:true});prog();
+
+  /* pointer effects */
+  $$('.card').forEach(function(c){c.addEventListener('pointermove',function(e){var r=c.getBoundingClientRect();c.style.setProperty('--x',(e.clientX-r.left)+'px');c.style.setProperty('--y',(e.clientY-r.top)+'px')})});
+  if(fine&&!calm){
+    var dev=$('#device'),stage=$('#stage');
+    stage.addEventListener('pointermove',function(e){var r=stage.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;dev.style.transform='rotateY('+(-14+x*16).toFixed(2)+'deg) rotateX('+(8-y*12).toFixed(2)+'deg)'});
+    stage.addEventListener('pointerleave',function(){dev.style.transform=''});
+    $$('.btn').forEach(function(b){
+      b.addEventListener('pointermove',function(e){var r=b.getBoundingClientRect();b.style.transform='translate('+((e.clientX-r.left-r.width/2)*.18).toFixed(1)+'px,'+((e.clientY-r.top-r.height/2)*.25).toFixed(1)+'px)'});
+      b.addEventListener('pointerleave',function(){b.style.transform=''});
+    });
+  }
+
+  /* scan field: a wave of points swept by an audit beam */
+  (function(){
+    var cv=$('#field'),gl=cv.getContext('webgl',{antialias:false,alpha:true});
+    if(!gl){cv.style.display='none';return}
+    var phone=innerWidth<760,C=phone?90:170,R=phone?60:100,N=C*R,a=new Float32Array(N*3);
+    for(var j=0;j<R;j++)for(var i=0;i<C;i++){var k=(j*C+i)*3;a[k]=(i/(C-1)-.5)*2;a[k+1]=j/(R-1);a[k+2]=Math.random()}
+    var dpr=Math.min(devicePixelRatio||1,phone?1.5:2);
+    var vs='precision highp float;attribute vec3 p;uniform float T,A,Y;uniform vec2 M;varying vec3 c;varying float f;'+
+      'void main(){float x=p.x*7.,z=p.y*16.;'+
+      'float h=.28*sin(x*.9+T*.6)+.22*sin(z*.55-T*.8)+.12*sin((x+z)*1.4+T);'+
+      'float md=length(vec2(p.x*A*.5,p.y)-vec2(M.x*.6*A*.5,.25+M.y*.25));h+=.5*exp(-md*md*40.)*sin(T*3.-md*30.);'+
+      'vec3 P=vec3(x,h-1.6-Y*1.2,z*-1.+2.);float zz=-P.z+4.;'+
+      'float s=fract(T*.07),d=abs(p.y-s),beam=smoothstep(.05,0.,d),past=smoothstep(.0,.25,s-p.y)*step(p.y,s);'+
+      'vec3 base=mix(vec3(.31,.49,1.),vec3(.42,.36,1.),p.y);vec3 hit=vec3(.22,.88,1.);vec3 amb=vec3(1.,.71,.28);'+
+      'float flag=step(.985,p.z);'+
+      'c=mix(base,hit,beam);c=mix(c,amb,flag*past);'+
+      'f=(.22+.9*beam+.5*flag*past)*clamp(1.-p.y*1.1,.08,1.)*smoothstep(0.,.08,p.y);'+
+      'gl_Position=vec4(P.x/zz*1.7/max(A,.8),(P.y+.3)/zz*1.7,0.,1.);'+
+      'gl_PointSize=('+(1.3*dpr).toFixed(2)+'+'+(2.6*dpr).toFixed(2)+'*beam+'+(1.2*dpr).toFixed(2)+'*flag*past)*(3.5/zz);}';
+    var fs='precision mediump float;varying vec3 c;varying float f;void main(){float d=length(gl_PointCoord-.5);float a=smoothstep(.5,.1,d)*f;gl_FragColor=vec4(c*a,a);}';
+    function sh(t,s){var o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);return o}
+    var pr=gl.createProgram();gl.attachShader(pr,sh(gl.VERTEX_SHADER,vs));gl.attachShader(pr,sh(gl.FRAGMENT_SHADER,fs));gl.linkProgram(pr);
+    if(!gl.getProgramParameter(pr,gl.LINK_STATUS)){cv.style.display='none';return}
+    gl.useProgram(pr);gl.bindBuffer(gl.ARRAY_BUFFER,gl.createBuffer());gl.bufferData(gl.ARRAY_BUFFER,a,gl.STATIC_DRAW);
+    var lp=gl.getAttribLocation(pr,'p');gl.enableVertexAttribArray(lp);gl.vertexAttribPointer(lp,3,gl.FLOAT,false,0,0);
+    var U={T:gl.getUniformLocation(pr,'T'),A:gl.getUniformLocation(pr,'A'),Y:gl.getUniformLocation(pr,'Y'),M:gl.getUniformLocation(pr,'M')};
+    gl.enable(gl.BLEND);gl.blendFunc(gl.ONE,gl.ONE_MINUS_SRC_ALPHA);
+    var W,H,mx=0,my=0,tx=0,ty=0,sy=0;
+    function size(){W=innerWidth;H=innerHeight;cv.width=W*dpr;cv.height=H*dpr;gl.viewport(0,0,cv.width,cv.height)}
+    size();addEventListener('resize',function(){size();if(calm)frame(0)});
+    addEventListener('pointermove',function(e){tx=e.clientX/W*2-1;ty=1-e.clientY/H*2},{passive:true});
+    function frame(t){
+      mx+=(tx-mx)*.05;my+=(ty-my)*.05;sy+=(Math.min(scrollY/H,3)-sy)*.08;
+      gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);
+      gl.uniform1f(U.T,calm?6:t*.001);gl.uniform1f(U.A,W/H);gl.uniform1f(U.Y,sy*.35);gl.uniform2f(U.M,mx,my);
+      gl.drawArrays(gl.POINTS,0,N);
+    }
+    if(calm){frame(0);return}
+    var raf,last=0,slow=0,n=0;
+    function loop(t){raf=requestAnimationFrame(loop);if(last&&++n<300&&t-last>32)slow++;if(n===300&&slow>120){dpr=1;size()}last=t;frame(t)}
+    document.addEventListener('visibilitychange',function(){cancelAnimationFrame(raf);if(!document.hidden)raf=requestAnimationFrame(loop)});
+    raf=requestAnimationFrame(loop);
+  })();
+})();
+</script>
+</body>
+</html>
