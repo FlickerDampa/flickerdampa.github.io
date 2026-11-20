@@ -388,7 +388,7 @@ h2{position:relative}
 /* bento mini visuals */
 .mini{margin-top:18px;border-radius:12px;border:1px solid var(--line);background:rgba(3,6,10,.6);padding:12px;position:relative;overflow:hidden}
 .diffrow{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;font:500 12px var(--m);color:var(--soft);padding:7px 8px;border-radius:7px;animation:rowhl 6s infinite}
-.diffrow:nth-child(2){animation-delay:2s}.diffrow:nth-child(3){animation-delay:4s}
+.diffrow{animation-duration:8s}.diffrow:nth-child(2){animation-delay:2s}.diffrow:nth-child(3){animation-delay:4s}.diffrow:nth-child(4){animation-delay:6s}
 @keyframes rowhl{0%,30%{background:rgba(34,211,238,.08);box-shadow:inset 2px 0 0 var(--cyan)}34%,100%{background:transparent;box-shadow:none}}
 .diffrow em{font-style:normal;display:flex;gap:6px;align-items:center}
 .diffrow .b{color:#fda4b4;background:rgba(244,63,94,.12);padding:1px 6px;border-radius:4px;text-decoration:line-through;text-decoration-color:rgba(244,63,94,.6)}
@@ -457,6 +457,25 @@ details{position:relative;overflow:hidden}
 details:before{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--grad);transform:scaleY(0);transition:transform .3s}
 details[open]:before,details:hover:before{transform:scaleY(1)}
 
+
+.tl{display:flex;flex-direction:column}
+@media (min-width:1021px){.tl-chart{height:255px}}
+.ck{display:grid;gap:7px;margin-top:12px}.ck div{display:flex;align-items:center;gap:10px;font:500 12px var(--m);color:var(--soft)}.ck i{font-style:normal;width:18px;height:18px;border-radius:5px;display:grid;place-items:center;font-size:11px;font-weight:700}.ck .p{color:#34d399;background:rgba(52,211,153,.12)}.ck .w{color:#fbbf24;background:rgba(251,191,36,.12)}.ck .f{color:#f43f5e;background:rgba(244,63,94,.12)}.ck em{font-style:normal;margin-left:auto;color:var(--muted)}
+.tl-sum{margin-top:auto;padding-top:20px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.tl-sum div{padding:14px 16px;border-radius:12px;border:1px dashed var(--line2);background:rgba(3,6,10,.45)}
+.tl-sum small{display:block;font:500 10.5px var(--m);letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
+.tl-sum b{font:700 24px/1.3 var(--d);color:var(--ink)}
+.tl-sum b em{font-style:normal;font-size:13px;color:var(--muted);margin-left:4px;font-weight:500}
+.cli{align-items:stretch}
+.exits{grid-auto-rows:1fr}
+.rep{margin-top:18px;border-radius:12px;border:1px solid var(--line);background:rgba(3,6,10,.6);overflow:hidden}
+.rep .rb{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line);font:500 11px var(--m);color:var(--muted)}
+.rep .rb i{width:7px;height:7px;border-radius:50%;background:var(--line2)}
+.rep .rb span{margin-left:auto;padding:2px 8px;border-radius:5px;border:1px solid var(--line);color:var(--soft)}
+.rep .rr{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:8px 12px;font:500 12px var(--m);color:var(--soft);border-bottom:1px solid rgba(120,200,230,.06)}
+.rep .rr:last-child{border-bottom:0}
+.rep .rr em{font-style:normal;color:var(--muted)}
+
 @media (max-width:1020px){
   .hero .wrap,.drift,.scorebox,.cli,.dl .wrapdl{grid-template-columns:minmax(0,1fr)}
   .hero .wrap>*,.drift>*,.scorebox>*,.cli>*,.dl .wrapdl>*{min-width:0}
@@ -483,7 +502,7 @@ details[open]:before,details:hover:before{transform:scaleY(1)}
   section{padding-top:84px}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.js .reveal,.js .ladder .rung,.js .term .ln{opacity:1;transform:none}#tlline{stroke-dashoffset:0}#tlarea{opacity:1}html{scroll-behavior:auto}#net,.cursor,#dust{display:none}.meter i{transform:none}}
-@media (max-width:760px){.rung{grid-template-columns:1fr}.bigword{display:none}.floor,.cursor{display:none}.aurora{opacity:.35}.console{animation:none}}
+@media (max-width:760px){.tl-sum{grid-template-columns:repeat(2,1fr)}.rung{grid-template-columns:1fr}.bigword{display:none}.floor,.cursor{display:none}.aurora{opacity:.35}.console{animation:none}}
 </style>
 </head>
 <body>
@@ -601,6 +620,12 @@ details[open]:before,details:hover:before{transform:scaleY(1)}
           <button class="node" type="button" data-a="1" aria-pressed="false"><small>04 NOV · 14 DAYS LATER</small><b>Routine</b><i style="color:#34d399">100</i></button>
           <button class="node" type="button" data-a="2" aria-pressed="true"><small>18 NOV · 14 DAYS LATER</small><b>Drifted</b><i style="color:#fb923c">58</i></button>
         </div>
+        <div class="tl-sum" aria-label="Summary across all three audits">
+          <div><small>Days tracked</small><b>28</b></div>
+          <div><small>Changes found</small><b>10</b></div>
+          <div><small>Need action</small><b style="color:var(--crit)">7</b></div>
+          <div><small>Score</small><b style="color:var(--high)">&minus;42<em>pts</em></b></div>
+        </div>
       </div>
       <div class="spot panel changes" id="changes" aria-live="polite">
         <h3>What changed <span id="ctag">04 Nov → 18 Nov</span></h3>
@@ -652,6 +677,7 @@ details[open]:before,details:hover:before{transform:scaleY(1)}
         <div class="mini" aria-hidden="true">
           <div class="diffrow"><span class="sev c">CRIT</span><span>Real-time protection</span><em><span class="b">On</span>→<span class="a">Off</span></em></div>
           <div class="diffrow"><span class="sev h">HIGH</span><span>Remote Desktop</span><em><span class="b">Disabled</span>→<span class="a">Enabled</span></em></div>
+          <div class="diffrow"><span class="sev m">MED</span><span>DNS servers</span><em><span class="b">1.1.1.1</span>→<span class="a">10.0.0.53</span></em></div>
           <div class="diffrow"><span class="sev i">INFO</span><span>Google Chrome</span><em><span class="b">131.0.86</span>→<span class="a">131.0.140</span></em></div>
         </div>
         <div class="chips"><span>matched by name, account, serial</span><span>run-to-run noise ignored</span><span>direction-aware</span><span>mark as expected</span></div>
@@ -661,6 +687,7 @@ details[open]:before,details:hover:before{transform:scaleY(1)}
         <h3>Security score</h3>
         <p>Every audit graded out of 100 against 20 checks, with advice for each failure.</p>
         <div class="mini ring" aria-hidden="true"><svg viewBox="0 0 86 86"><circle cx="43" cy="43" r="36" fill="none" stroke="rgba(120,200,230,.12)" stroke-width="8"/><circle class="arc" cx="43" cy="43" r="36" fill="none" stroke="url(#gg)" stroke-width="8" stroke-linecap="round" transform="rotate(-90 43 43)"/></svg><small><b>A · 92</b>20 checks<br>weighted by risk</small></div>
+        <div class="mini ck" aria-hidden="true"><div><i class="p">&#10003;</i>Real-time protection<em>+12</em></div><div><i class="p">&#10003;</i>Firewall, all profiles<em>+10</em></div><div><i class="f">&#10005;</i>Guest account on<em>0</em></div></div>
       </div>
       <div class="spot card s2 reveal">
         <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v11a1.5 1.5 0 0 0 1.5 1.5h15A1.5 1.5 0 0 0 21 18v-8.5a1 1 0 0 0-1-1h-8.5L9.5 5.5h-5A1.5 1.5 0 0 0 3 7z"/></svg></div>
@@ -699,6 +726,12 @@ details[open]:before,details:hover:before{transform:scaleY(1)}
         <p>A self-contained HTML report that opens anywhere with filters and search, CSV for Excel, JSON for scripts and SIEMs, and a short Markdown summary you can paste straight into a ticket.</p>
         <div class="chips cycle"><span>HTML</span><span>CSV</span><span>JSON</span><span>Markdown</span><span>fleet report</span><span>per-PC report</span></div>
         <div class="chips"><span>Ctrl+K search</span><span>dark &amp; light</span><span>keyboard shortcuts</span><span>drag and drop</span></div>
+        <div class="rep" aria-hidden="true">
+          <div class="rb"><i></i><i></i><i></i>drift.html<span>Filter: High+</span></div>
+          <div class="rr"><span class="sev c">CRIT</span><span>DEMO-LAPTOP-01 · Real-time protection</span><em>On → Off</em></div>
+          <div class="rr"><span class="sev c">CRIT</span><span>ENG-WS-02 · New local admin</span><em>added</em></div>
+          <div class="rr"><span class="sev h">HIGH</span><span>HR-LAPTOP-05 · AnyDesk 9.0.4</span><em>installed</em></div>
+        </div>
       </div>
     </div>
   </div>
