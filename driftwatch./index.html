@@ -1,0 +1,1061 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-LUaLVp2KLiwwxuMCL74aDtZ3KfRXl6W3ZIlz6vqegWA='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DriftWatch: Free Security Drift Monitoring for Windows PCs (Beta)</title>
+<meta name="description" content="Free, open-source Windows app that scores every PC's security and shows what changed between DeviceDossier audits: new admins, antivirus off, BitLocker off, risky software. Offline and portable.">
+<link rel="canonical" href="https://flickerdampa.github.io/driftwatch/">
+<meta name="theme-color" content="#04070b">
+<meta name="color-scheme" content="dark">
+<meta name="darkreader-lock">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="FlickerDampa">
+<meta property="og:title" content="DriftWatch: catch the change before it becomes the breach">
+<meta property="og:description" content="Security drift monitoring for Windows PCs. Scores every audit out of 100 and ranks every change between audits, Critical to Info. Free, offline, open source.">
+<meta property="og:url" content="https://flickerdampa.github.io/driftwatch/">
+<meta property="og:image" content="https://flickerdampa.github.io/driftwatch/img/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="DriftWatch fleet overview showing security scores and risk-ranked changes">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" href="img/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"SoftwareApplication","name":"DriftWatch","applicationCategory":"SecurityApplication","operatingSystem":"Windows 10, Windows 11","softwareVersion":"1.0.0-beta.1","description":"Security drift monitoring for Windows PCs. Scores each DeviceDossier audit against 20 security checks and ranks every change between audits from Critical to Info.","url":"https://flickerdampa.github.io/driftwatch/","downloadUrl":"https://github.com/FlickerDampa/DriftWatch/releases","license":"https://opensource.org/licenses/MIT","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"FlickerDampa","url":"https://flickerdampa.github.io/"},"codeRepository":"https://github.com/FlickerDampa/DriftWatch","screenshot":"https://flickerdampa.github.io/driftwatch/img/overview.webp"}
+</script>
+<style>
+:root{
+  --bg:#04070b;--bg2:#070c13;--panel:#0a111b;--panel2:#0d1622;--ink:#e9f1f7;--soft:#b3c2cf;--muted:#7a8a99;--faint:#4b5a69;
+  --line:rgba(120,200,230,.12);--line2:rgba(120,200,230,.26);
+  --cyan:#22d3ee;--violet:#8b7cf6;--amber:#fbbf24;--mint:#34d399;
+  --crit:#f43f5e;--high:#fb923c;--med:#facc15;--low:#60a5fa;--info:#94a3b8;
+  --grad:linear-gradient(95deg,#22d3ee,#8b7cf6);
+  --d:'Space Grotesk',system-ui,sans-serif;--s:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;--m:'IBM Plex Mono',ui-monospace,Consolas,monospace;
+  --r:16px;--w:1180px
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;background:var(--bg)}
+body{font:16px/1.65 var(--s);color:var(--soft);background:transparent;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;display:block}
+::selection{background:rgba(34,211,238,.3);color:#fff}
+.wrap{width:min(var(--w),100% - 40px);margin:0 auto}
+.skip{position:absolute;left:-999px;top:8px;background:#fff;color:#000;padding:8px 14px;border-radius:8px;z-index:99}.skip:focus{left:12px}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:3px;border-radius:6px}
+
+/* background: grid + aurora */
+.bgfx{position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+   radial-gradient(900px 520px at 85% -10%,rgba(139,124,246,.16),transparent 60%),
+   radial-gradient(800px 600px at -10% 10%,rgba(34,211,238,.12),transparent 60%),
+   linear-gradient(var(--bg),var(--bg))}
+.bgfx:after{content:"";position:absolute;inset:0;
+  background-image:linear-gradient(rgba(120,200,230,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(120,200,230,.05) 1px,transparent 1px);
+  background-size:56px 56px;opacity:.7;animation:pan 40s linear infinite;mask-image:linear-gradient(#000,rgba(0,0,0,.35) 40%,rgba(0,0,0,.35))}
+@keyframes pan{to{background-position:56px 56px,56px 56px}}
+
+/* nav */
+header.nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px) saturate(140%);background:rgba(4,7,11,.72);border-bottom:1px solid var(--line)}
+.nav .wrap{display:flex;align-items:center;gap:22px;height:64px}
+.brand{display:flex;align-items:center;gap:10px;font:600 17px var(--d);color:var(--ink);letter-spacing:-.01em}
+.brand img{width:28px;height:28px;border-radius:7px}
+.tag{font:600 10px var(--m);letter-spacing:.08em;color:#c9c1ff;background:rgba(139,124,246,.16);border:1px solid rgba(139,124,246,.35);padding:2px 7px;border-radius:999px}
+.nav nav{display:flex;gap:4px;margin-left:auto}
+.nav nav a{font:500 14px var(--s);color:var(--muted);padding:8px 12px;border-radius:8px;transition:color .2s,background .2s}
+.nav nav a:hover{color:var(--ink);background:rgba(255,255,255,.04)}
+.btn{display:inline-flex;align-items:center;gap:9px;font:600 15px var(--s);border-radius:11px;padding:12px 20px;transition:transform .15s,box-shadow .2s,background .2s,border-color .2s;white-space:nowrap}
+.btn svg{width:17px;height:17px;flex:none}
+.btn.primary{background:var(--grad);color:#041018;box-shadow:0 10px 36px -10px rgba(34,211,238,.55),inset 0 1px 0 rgba(255,255,255,.35)}
+.btn.primary:hover{transform:translateY(-1px);box-shadow:0 14px 44px -10px rgba(139,124,246,.6),inset 0 1px 0 rgba(255,255,255,.35)}
+.btn.ghost{border:1px solid var(--line2);color:var(--ink);background:rgba(255,255,255,.02)}
+.btn.ghost:hover{border-color:rgba(34,211,238,.55);background:rgba(34,211,238,.06)}
+.btn.sm{padding:8px 14px;font-size:14px;border-radius:9px}
+.menu{display:none;background:none;border:1px solid var(--line2);color:var(--ink);border-radius:9px;width:40px;height:40px;cursor:pointer}
+
+/* hero */
+.hero{padding:76px 0 40px;position:relative}
+.hero .wrap{display:grid;grid-template-columns:1.05fr 1fr;gap:56px;align-items:center}
+.kicker{display:inline-flex;align-items:center;gap:10px;font:500 12.5px var(--m);color:var(--cyan);letter-spacing:.04em;border:1px solid rgba(34,211,238,.3);background:rgba(34,211,238,.06);padding:6px 12px 6px 8px;border-radius:999px;margin-bottom:26px}
+.pulse{width:8px;height:8px;border-radius:50%;background:var(--mint);box-shadow:0 0 0 0 rgba(52,211,153,.6);animation:pulse 2s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 9px rgba(52,211,153,0)}100%{box-shadow:0 0 0 0 rgba(52,211,153,0)}}
+h1{font:700 clamp(40px,5.6vw,68px)/1.02 var(--d);color:var(--ink);letter-spacing:-.035em}
+h1 .g{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{font-size:18.5px;color:var(--soft);margin:24px 0 32px;max-width:560px}
+.cta{display:flex;gap:12px;flex-wrap:wrap}
+.meta{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:26px;font:500 13px var(--m);color:var(--muted)}
+.meta span{display:inline-flex;align-items:center;gap:7px}
+.meta span:before{content:"";width:5px;height:5px;border-radius:50%;background:var(--cyan)}
+
+/* console */
+.console{position:relative;border-radius:18px;background:linear-gradient(180deg,rgba(13,22,34,.92),rgba(7,12,19,.95));border:1px solid var(--line2);box-shadow:0 40px 120px -40px rgba(34,211,238,.35),0 0 0 1px rgba(255,255,255,.02) inset;overflow:hidden}
+.console:before{content:"";position:absolute;inset:-1px;border-radius:18px;padding:1px;background:linear-gradient(140deg,rgba(34,211,238,.6),transparent 35%,transparent 65%,rgba(139,124,246,.6));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+.c-top{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--line);font:500 12px var(--m);color:var(--muted)}
+.dots{display:flex;gap:6px}.dots i{width:10px;height:10px;border-radius:50%;background:#1d2a38}
+.c-top .live{margin-left:auto;display:flex;align-items:center;gap:7px;color:var(--mint)}
+.c-body{display:grid;grid-template-columns:150px 1fr;gap:0}
+.radar{border-right:1px solid var(--line);padding:18px 14px;display:flex;flex-direction:column;align-items:center;gap:14px}
+.radar svg{width:118px;height:118px}
+.sweep{transform-origin:60px 60px;animation:spin 4s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.score{text-align:center;font:500 11px var(--m);color:var(--muted);letter-spacing:.06em}
+.score b{display:block;font:700 34px/1 var(--d);color:var(--ink);letter-spacing:-.02em;margin-bottom:4px}
+.score b.bad{color:var(--high)}
+.feed{padding:14px 16px;font:500 12.5px/1.5 var(--m);height:292px;overflow:hidden;position:relative;mask-image:linear-gradient(transparent,#000 14%,#000 86%,transparent)}
+.ev{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;padding:9px 0;border-bottom:1px dashed rgba(120,200,230,.09);animation:in .5s ease both}
+@keyframes in{from{opacity:0;transform:translateY(10px)}}
+.sev{font:600 10px var(--m);letter-spacing:.06em;padding:2px 7px;border-radius:5px;height:fit-content;margin-top:1px}
+.sev.c{color:#ffd0d8;background:rgba(244,63,94,.18);border:1px solid rgba(244,63,94,.4)}
+.sev.h{color:#ffe1cc;background:rgba(251,146,60,.16);border:1px solid rgba(251,146,60,.4)}
+.sev.m{color:#fff3b0;background:rgba(250,204,21,.14);border:1px solid rgba(250,204,21,.38)}
+.sev.l{color:#d6e7ff;background:rgba(96,165,250,.14);border:1px solid rgba(96,165,250,.38)}
+.sev.i{color:#dbe3ee;background:rgba(148,163,184,.12);border:1px solid rgba(148,163,184,.32)}
+.ev .t{color:var(--ink)}
+.ev .d{grid-column:2;color:var(--faint);font-size:11.5px}
+.ev .d em{font-style:normal;color:var(--muted)}
+
+/* strip */
+.strip{border-block:1px solid var(--line);background:rgba(7,12,19,.6)}
+.strip .wrap{display:grid;grid-template-columns:repeat(5,1fr);align-items:stretch}
+.stat{padding:26px 18px;border-left:1px solid var(--line)}
+.stat:first-child{border-left:0}
+.stat b{display:block;font:700 30px/1.1 var(--d);color:var(--ink);letter-spacing:-.02em}
+.stat span{display:block;margin-top:6px;font:500 12.5px/1.5 var(--m);color:var(--muted)}
+
+/* sections */
+section{padding:110px 0 0}
+.eyebrow{font:500 12.5px var(--m);color:var(--cyan);letter-spacing:.12em;text-transform:uppercase;display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.eyebrow:before{content:"";width:22px;height:1px;background:var(--cyan)}
+h2{font:700 clamp(30px,3.8vw,46px)/1.08 var(--d);color:var(--ink);letter-spacing:-.03em;max-width:780px}
+.sub{font-size:17.5px;color:var(--soft);max-width:680px;margin-top:16px}
+.head{margin-bottom:46px}
+
+/* timeline scrubber */
+.drift{display:grid;grid-template-columns:1fr 380px;gap:22px}
+.panel{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:var(--r)}
+.tl{padding:26px 26px 18px}
+.tl-chart{position:relative;height:210px}
+.tl-chart svg{width:100%;height:100%;overflow:visible}
+.tl-nodes{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:20px}
+.node{text-align:left;font:inherit;color:inherit;background:rgba(255,255,255,.015);border:1px solid var(--line);border-radius:12px;padding:12px 14px;cursor:pointer;transition:border-color .2s,background .2s}
+.node:hover{border-color:var(--line2)}
+.node[aria-pressed=true]{border-color:rgba(34,211,238,.6);background:rgba(34,211,238,.07)}
+.node small{display:block;font:500 11px var(--m);color:var(--muted);letter-spacing:.06em}
+.node b{font:600 15px var(--d);color:var(--ink)}
+.node i{font-style:normal;float:right;font:700 15px var(--d)}
+.changes{padding:22px}
+.changes h3{font:600 15px var(--d);color:var(--ink);display:flex;justify-content:space-between;align-items:center}
+.changes h3 span{font:500 11.5px var(--m);color:var(--muted)}
+.ch{display:flex;gap:10px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--line);font-size:14px;animation:in .35s ease both}
+.ch:last-child{border-bottom:0}
+.ch p{color:var(--ink);line-height:1.4}
+.ch p small{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
+.verdict{margin-top:14px;padding:12px 14px;border-radius:10px;font:600 13px var(--m)}
+
+/* tabs showcase */
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px}
+.tabs button{font:500 14px var(--s);color:var(--muted);background:rgba(255,255,255,.02);border:1px solid var(--line);padding:9px 16px;border-radius:999px;cursor:pointer;transition:all .2s}
+.tabs button:hover{color:var(--ink);border-color:var(--line2)}
+.tabs button[aria-selected=true]{color:#041018;background:var(--grad);border-color:transparent}
+.monitor{position:relative;border-radius:18px;padding:10px;background:linear-gradient(180deg,#0f1a27,#080d15);border:1px solid var(--line2);box-shadow:0 60px 140px -50px rgba(139,124,246,.45)}
+.monitor img{border-radius:10px;width:100%;height:auto;aspect-ratio:1472/893;background:#0a0e18}
+.monitor .glow{position:absolute;inset:auto 10% -40px;height:80px;background:radial-gradient(closest-side,rgba(34,211,238,.35),transparent);filter:blur(20px);z-index:-1}
+.capt{display:grid;grid-template-columns:1fr auto;gap:20px;align-items:center;margin-top:18px}
+.capt p{color:var(--soft);font-size:15.5px}
+.capt b{color:var(--ink);font-family:var(--d)}
+.counter{font:500 12px var(--m);color:var(--muted)}
+
+/* bento */
+.bento{display:grid;grid-template-columns:repeat(6,1fr);gap:16px}
+.card{position:relative;padding:26px;border-radius:var(--r);background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);overflow:hidden;transition:border-color .25s,transform .25s}
+.card:hover{border-color:var(--line2);transform:translateY(-2px)}
+.card h3{font:600 19px/1.25 var(--d);color:var(--ink);margin:14px 0 8px;letter-spacing:-.01em}
+.card p{font-size:14.5px;color:var(--soft)}
+.ic{width:42px;height:42px;border-radius:11px;display:grid;place-items:center;background:rgba(34,211,238,.09);border:1px solid rgba(34,211,238,.25);color:var(--cyan)}
+.ic svg{width:21px;height:21px}
+.s2{grid-column:span 2}.s3{grid-column:span 3}.s4{grid-column:span 4}
+.card .art{margin-top:18px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:16px}
+.chips span{font:500 11.5px var(--m);color:var(--soft);border:1px solid var(--line);background:rgba(255,255,255,.02);padding:4px 9px;border-radius:6px}
+
+/* severity ladder */
+.ladder{display:grid;gap:10px}
+.rung{display:grid;grid-template-columns:150px 1fr;align-items:center;gap:22px;padding:18px 22px;border-radius:14px;background:linear-gradient(90deg,var(--tint),rgba(10,17,27,.7) 40%);border:1px solid var(--line);position:relative;overflow:hidden}
+.rung:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--c)}
+.rung h4{font:700 18px var(--d);color:var(--c);display:flex;flex-direction:column}
+.rung h4 small{font:500 11px var(--m);color:var(--muted);letter-spacing:.06em;margin-top:2px}
+.rung ul{list-style:none;display:flex;flex-wrap:wrap;gap:6px 8px}
+.rung li{font-size:13.5px;color:var(--ink);background:rgba(255,255,255,.03);border:1px solid var(--line);padding:4px 10px;border-radius:7px}
+.note{margin-top:18px;font-size:14.5px;color:var(--muted)}
+.note code,.mono{font-family:var(--m);font-size:.9em;color:var(--cyan)}
+
+/* score */
+.scorebox{display:grid;grid-template-columns:330px 1fr;gap:22px}
+.gauge{padding:30px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.gauge svg{width:220px;height:220px}
+.gauge .num{font:700 58px/1 var(--d);color:var(--ink);letter-spacing:-.03em}
+.gauge p{font-size:14px;color:var(--muted);margin-top:16px;max-width:240px}
+.grades{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:18px}
+.grades span{font:600 11.5px var(--m);white-space:nowrap;padding:4px 8px;border-radius:6px;border:1px solid var(--line);color:var(--muted)}
+.checks{padding:26px;display:grid;grid-template-columns:repeat(2,1fr);gap:18px 26px}
+.group h4{font:600 12px var(--m);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.group li{list-style:none;display:flex;align-items:center;gap:9px;font-size:14px;color:var(--ink);padding:3px 0}
+.group li:before{content:"";width:14px;height:14px;flex:none;border-radius:4px;background:rgba(52,211,153,.18) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2334d399' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7'/%3E%3C/svg%3E") center/10px no-repeat;border:1px solid rgba(52,211,153,.35)}
+
+/* pipeline */
+.pipe{display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;align-items:stretch;gap:0}
+.step{padding:22px;border-radius:14px;background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line)}
+.step small{font:500 11px var(--m);color:var(--cyan);letter-spacing:.08em}
+.step h4{font:600 17px var(--d);color:var(--ink);margin:8px 0 6px}
+.step p{font-size:13.5px;color:var(--muted)}
+.step.hl{border-color:rgba(34,211,238,.5);box-shadow:0 0 0 1px rgba(34,211,238,.15) inset,0 20px 60px -30px rgba(34,211,238,.5)}
+.arrow{display:grid;place-items:center;width:44px;color:var(--faint)}
+.arrow svg{width:22px;height:22px}
+.flow{stroke-dasharray:4 5;animation:dash 1s linear infinite}
+@keyframes dash{to{stroke-dashoffset:-9}}
+
+/* terminal */
+.cli{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start}
+.term{border-radius:14px;background:#03060a;border:1px solid var(--line2);overflow:hidden}
+.term .bar{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line);font:500 12px var(--m);color:var(--muted)}
+.term pre{padding:18px;font:500 13px/1.75 var(--m);color:var(--soft);overflow-x:auto;white-space:pre}
+.term .p{color:var(--cyan)}.term .k{color:#c4b8ff}.term .c{color:var(--faint)}.term .ok{color:var(--mint)}.term .w{color:var(--high)}.term .r{color:var(--crit)}
+.exits{display:grid;gap:10px}
+.exit{display:grid;grid-template-columns:44px 1fr;gap:14px;align-items:center;padding:14px 16px;border-radius:12px;border:1px solid var(--line);background:var(--panel)}
+.exit b{font:700 22px var(--m);text-align:center;color:var(--cyan)}
+.exit p{font-size:14px;color:var(--soft)}
+.exit p strong{color:var(--ink);font-weight:600}
+
+/* privacy */
+.priv{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.pv{padding:22px;border-radius:14px;border:1px solid var(--line);background:var(--panel)}
+.pv b{display:block;font:700 24px var(--d);color:var(--ink);margin-bottom:6px}
+.pv p{font-size:14px;color:var(--muted)}
+
+/* download */
+.dl{position:relative;border-radius:22px;padding:56px;overflow:hidden;border:1px solid var(--line2);background:radial-gradient(600px 300px at 90% 0%,rgba(139,124,246,.22),transparent 60%),radial-gradient(600px 300px at 0% 100%,rgba(34,211,238,.18),transparent 60%),linear-gradient(180deg,#0b1420,#070c13)}
+.dl .wrapdl{display:grid;grid-template-columns:1.2fr 1fr;gap:40px;align-items:center}
+.dl h2{max-width:none}
+.req{display:grid;gap:10px}
+.req div{display:flex;justify-content:space-between;gap:16px;font-size:14px;padding:10px 0;border-bottom:1px solid var(--line)}
+.req div span:first-child{color:var(--muted)}.req div span:last-child{color:var(--ink);text-align:right}
+.hash{margin-top:18px;display:flex;align-items:center;gap:10px;background:#03060a;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.hash code{font:500 11.5px var(--m);color:var(--soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.hash button{font:600 12px var(--s);color:var(--ink);background:rgba(255,255,255,.05);border:1px solid var(--line2);border-radius:7px;padding:5px 10px;cursor:pointer}
+.smart{margin-top:22px;font-size:13.5px;color:var(--muted);padding:12px 14px;border-left:2px solid var(--amber);background:rgba(251,191,36,.06);border-radius:0 8px 8px 0}
+
+/* faq */
+.faq{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+details{border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:0 20px;transition:border-color .2s}
+details[open]{border-color:var(--line2)}
+summary{cursor:pointer;list-style:none;font:600 16px var(--d);color:var(--ink);padding:18px 30px 18px 0;position:relative}
+summary::-webkit-details-marker{display:none}
+summary:after{content:"+";position:absolute;right:0;top:15px;font:400 22px var(--m);color:var(--cyan);transition:transform .2s}
+details[open] summary:after{transform:rotate(45deg)}
+details p{padding:0 0 18px;font-size:14.5px;color:var(--soft)}
+details a{color:var(--cyan)}
+
+footer{margin-top:110px;border-top:1px solid var(--line);padding:30px 0 40px;font-size:14px;color:var(--muted)}
+footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+footer a{color:var(--soft)}footer a:hover{color:var(--cyan)}
+footer nav{display:flex;gap:18px;flex-wrap:wrap}
+
+.js .reveal{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease}
+.js .reveal.on{opacity:1;transform:none}
+
+
+/* ---- motion layer ---- */
+body:before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.05;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.progress{position:fixed;top:0;left:0;height:2px;width:100%;transform-origin:0 50%;transform:scaleX(0);background:var(--grad);z-index:60;box-shadow:0 0 12px rgba(34,211,238,.8)}
+.cursor{position:fixed;left:0;top:0;width:520px;height:520px;margin:-260px 0 0 -260px;border-radius:50%;pointer-events:none;z-index:-1;background:radial-gradient(closest-side,rgba(34,211,238,.09),rgba(139,124,246,.05) 45%,transparent 70%);transition:opacity .4s;opacity:0}
+.hero{overflow:hidden;isolation:isolate}
+.hero-bg{position:absolute;inset:0;z-index:-1;pointer-events:none}
+#net{position:absolute;inset:0;width:100%;height:100%;mask-image:linear-gradient(#000 60%,transparent 98%)}
+.aurora{position:absolute;border-radius:50%;filter:blur(70px);opacity:.55;mix-blend-mode:screen}
+.aurora.a1{width:560px;height:560px;left:-140px;top:-160px;background:radial-gradient(circle,rgba(34,211,238,.55),transparent 65%);animation:float1 18s ease-in-out infinite}
+.aurora.a2{width:620px;height:620px;right:-180px;top:-120px;background:radial-gradient(circle,rgba(139,124,246,.55),transparent 65%);animation:float2 22s ease-in-out infinite}
+.aurora.a3{width:420px;height:420px;left:38%;top:280px;background:radial-gradient(circle,rgba(244,63,94,.28),transparent 65%);animation:float3 16s ease-in-out infinite}
+@keyframes float1{50%{transform:translate(120px,90px) scale(1.15)}}
+@keyframes float2{50%{transform:translate(-110px,120px) scale(.9)}}
+@keyframes float3{50%{transform:translate(-80px,-60px) scale(1.2);opacity:.35}}
+.floor{position:absolute;left:-25%;right:-25%;bottom:-10px;height:340px;transform:perspective(520px) rotateX(68deg);transform-origin:50% 100%;
+  background-image:linear-gradient(rgba(34,211,238,.35) 1px,transparent 1px),linear-gradient(90deg,rgba(34,211,238,.25) 1px,transparent 1px);background-size:64px 64px;
+  animation:floor 3.2s linear infinite;mask-image:linear-gradient(transparent,#000 55%,transparent);opacity:.45}
+@keyframes floor{to{background-position:0 64px,0 0}}
+.scanline{position:absolute;left:0;right:0;height:120px;top:-120px;background:linear-gradient(transparent,rgba(34,211,238,.07),transparent);animation:scanv 7s linear infinite}
+@keyframes scanv{to{top:110%}}
+
+/* ticker */
+.ticker{margin-top:64px;position:relative;overflow:hidden;border-bottom:1px solid var(--line);background:rgba(4,7,11,.7);mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
+.ticker .row{display:flex;gap:14px;width:max-content;padding:12px 0;animation:tick 48s linear infinite}
+.ticker:hover .row{animation-play-state:paused}
+@keyframes tick{to{transform:translateX(-50%)}}
+.tk{display:inline-flex;align-items:center;gap:10px;font:500 12.5px var(--m);color:var(--soft);white-space:nowrap;padding:6px 14px;border:1px solid var(--line);border-radius:999px;background:rgba(10,17,27,.8)}
+.tk b{font-weight:500;color:var(--muted)}
+
+/* glowing h1 shimmer */
+h1 .g{background:linear-gradient(95deg,#22d3ee,#8b7cf6,#22d3ee);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;animation:shine 6s linear infinite}
+@keyframes shine{to{background-position:-200% 0}}
+.console{animation:hover 7s ease-in-out infinite}
+@keyframes hover{50%{transform:translateY(-10px)}}
+.console:after{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);animation:sweepx 3.5s ease-in-out infinite;opacity:.8}
+@keyframes sweepx{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+
+/* spotlight on panels */
+.spot{position:relative}
+.spot:after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .3s;background:radial-gradient(420px circle at var(--mx,50%) var(--my,50%),rgba(34,211,238,.10),transparent 40%)}
+.spot:hover:after{opacity:1}
+.spot:before{content:"";position:absolute;inset:-1px;border-radius:inherit;padding:1px;pointer-events:none;opacity:0;transition:opacity .3s;background:radial-gradient(260px circle at var(--mx,50%) var(--my,50%),rgba(34,211,238,.7),rgba(139,124,246,.35) 40%,transparent 70%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.spot:hover:before{opacity:1}
+
+/* section glows and dividers */
+section{position:relative}
+section:not(.hero):before{content:"";position:absolute;left:50%;top:40px;width:min(1100px,90%);height:1px;transform:translateX(-50%);background:linear-gradient(90deg,transparent,rgba(34,211,238,.25),rgba(139,124,246,.25),transparent)}
+section:not(.hero):after{content:"";position:absolute;left:50%;top:39px;width:120px;height:3px;border-radius:3px;background:var(--cyan);box-shadow:0 0 14px var(--cyan);filter:blur(.5px);animation:runner 6s ease-in-out infinite;opacity:.8}
+@keyframes runner{0%{transform:translateX(-550px);opacity:0}15%,85%{opacity:.8}100%{transform:translateX(430px);opacity:0}}
+.orb{position:absolute;z-index:-1;width:520px;height:520px;border-radius:50%;filter:blur(90px);opacity:.3;pointer-events:none;animation:float1 20s ease-in-out infinite}
+.eyebrow:before{animation:grow 2.4s ease-in-out infinite alternate}
+@keyframes grow{to{width:40px;background:var(--violet)}}
+
+/* monitor tilt + scan */
+.monitor{transform-style:preserve-3d;transition:transform .25s ease-out;will-change:transform}
+.monitor .scan{position:absolute;inset:10px;border-radius:10px;pointer-events:none;overflow:hidden}
+.monitor .scan:before{content:"";position:absolute;left:0;right:0;height:30%;top:-30%;background:linear-gradient(transparent,rgba(34,211,238,.10),transparent);animation:scanv 5s linear infinite}
+.monitor .corner{position:absolute;width:22px;height:22px;border:2px solid var(--cyan);opacity:.8}
+.monitor .tl{top:-6px;left:-6px;border-right:0;border-bottom:0;border-radius:6px 0 0 0}
+.monitor .tr{top:-6px;right:-6px;border-left:0;border-bottom:0;border-radius:0 6px 0 0}
+.monitor .bl{bottom:-6px;left:-6px;border-right:0;border-top:0;border-radius:0 0 0 6px}
+.monitor .br{bottom:-6px;right:-6px;border-left:0;border-top:0;border-radius:0 0 6px 0}
+#shot{transition:opacity .25s}
+
+/* timeline draw */
+#tlline{stroke-dasharray:820;stroke-dashoffset:820;transition:stroke-dashoffset 1.8s cubic-bezier(.3,.7,.2,1)}
+#tlarea{opacity:0;transition:opacity 1.2s .8s}
+.drift.on #tlline{stroke-dashoffset:0}.drift.on #tlarea{opacity:1}
+#tlscan{animation:tlscan 6s linear infinite}
+@keyframes tlscan{from{transform:translateX(0)}to{transform:translateX(600px)}}
+
+/* staggered rungs and lines */
+.js .ladder .rung{opacity:0;transform:translateX(-30px);transition:opacity .6s,transform .6s}
+.ladder.on .rung{opacity:1;transform:none}
+.ladder.on .rung:nth-child(2){transition-delay:.1s}.ladder.on .rung:nth-child(3){transition-delay:.2s}.ladder.on .rung:nth-child(4){transition-delay:.3s}.ladder.on .rung:nth-child(5){transition-delay:.4s}
+.rung:after{content:"";position:absolute;top:0;bottom:0;width:30%;left:-30%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.04),transparent);animation:shimmer 5s ease-in-out infinite}
+.rung:nth-child(2):after{animation-delay:.6s}.rung:nth-child(3):after{animation-delay:1.2s}.rung:nth-child(4):after{animation-delay:1.8s}.rung:nth-child(5):after{animation-delay:2.4s}
+@keyframes shimmer{to{left:130%}}
+.js .term .ln{opacity:0}
+.cli.on .term .ln{animation:type .01s forwards}
+.cli.on .term .ln:nth-child(1){animation-delay:.2s}.cli.on .term .ln:nth-child(2){animation-delay:.7s}.cli.on .term .ln:nth-child(3){animation-delay:1.1s}.cli.on .term .ln:nth-child(4){animation-delay:1.9s}.cli.on .term .ln:nth-child(5){animation-delay:2.2s}.cli.on .term .ln:nth-child(6){animation-delay:2.5s}.cli.on .term .ln:nth-child(7){animation-delay:2.8s}.cli.on .term .ln:nth-child(8){animation-delay:3.1s}.cli.on .term .ln:nth-child(9){animation-delay:3.6s}.cli.on .term .ln:nth-child(10){animation-delay:4s}.cli.on .term .ln:nth-child(11){animation-delay:4.4s}.cli.on .term .ln:nth-child(12){animation-delay:4.8s}
+@keyframes type{to{opacity:1}}
+.caret{display:inline-block;width:8px;height:15px;background:var(--cyan);vertical-align:-2px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+
+/* pipeline packets */
+.arrow{position:relative}
+.arrow .pk{position:absolute;left:4px;top:50%;width:7px;height:7px;margin-top:-3.5px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px var(--cyan),0 0 20px var(--cyan);animation:packet 1.6s linear infinite}
+.arrow:nth-of-type(4) .pk{animation-delay:.5s;background:var(--violet);box-shadow:0 0 10px var(--violet)}
+.arrow:nth-of-type(6) .pk{animation-delay:1s;background:var(--amber);box-shadow:0 0 10px var(--amber)}
+@keyframes packet{0%{transform:translateX(0);opacity:0}15%{opacity:1}85%{opacity:1}100%{transform:translateX(30px);opacity:0}}
+.step.hl{animation:breathe 3s ease-in-out infinite}
+@keyframes breathe{50%{box-shadow:0 0 0 1px rgba(34,211,238,.3) inset,0 20px 70px -20px rgba(34,211,238,.7)}}
+
+/* download: rotating border */
+.dl{isolation:isolate}
+.dl:before{content:"";position:absolute;inset:-60%;z-index:-2;background:conic-gradient(from 0deg,transparent 0 70%,rgba(34,211,238,.9) 80%,rgba(139,124,246,.9) 88%,transparent 95%);animation:spin 6s linear infinite}
+.dl:after{content:"";position:absolute;inset:1px;border-radius:21px;z-index:-1;background:radial-gradient(600px 300px at 90% 0%,rgba(139,124,246,.22),transparent 60%),radial-gradient(600px 300px at 0% 100%,rgba(34,211,238,.18),transparent 60%),linear-gradient(180deg,#0b1420,#070c13)}
+.dl{background:transparent;border:0}
+
+/* stat counters glow */
+.stat b{background:linear-gradient(180deg,#fff,#9fb3c4);-webkit-background-clip:text;background-clip:text;color:transparent}
+.stat{position:relative;overflow:hidden}
+.stat:after{content:"";position:absolute;left:0;bottom:0;height:2px;width:100%;background:var(--grad);transform:scaleX(0);transform-origin:0;transition:transform .6s}
+.stat:hover:after{transform:scaleX(1)}
+
+
+/* ---- lower-page life ---- */
+#dust{position:fixed;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none}
+.bigword{position:absolute;right:-2%;top:70px;z-index:-1;font:700 clamp(90px,15vw,220px)/1 var(--d);letter-spacing:-.04em;color:transparent;-webkit-text-stroke:1px rgba(120,200,230,.10);white-space:nowrap;pointer-events:none;user-select:none;will-change:transform}
+.bigword.l{right:auto;left:-2%}
+.bigword:after{content:attr(data-w);position:absolute;inset:0;-webkit-text-stroke:1px rgba(34,211,238,.55);clip-path:inset(0 100% 0 0);animation:wipe 7s ease-in-out infinite}
+@keyframes wipe{0%{clip-path:inset(0 100% 0 0)}45%,55%{clip-path:inset(0 0 0 0)}100%{clip-path:inset(0 0 0 100%)}}
+h2{position:relative}
+.reveal.on h2,.head.on h2{animation:h2in .9s cubic-bezier(.2,.7,.2,1) both}
+@keyframes h2in{from{letter-spacing:.02em;filter:blur(6px);opacity:0}}
+
+/* bento mini visuals */
+.mini{margin-top:18px;border-radius:12px;border:1px solid var(--line);background:rgba(3,6,10,.6);padding:12px;position:relative;overflow:hidden}
+.diffrow{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;font:500 12px var(--m);color:var(--soft);padding:7px 8px;border-radius:7px;animation:rowhl 6s infinite}
+.diffrow{animation-duration:8s}.diffrow:nth-child(2){animation-delay:2s}.diffrow:nth-child(3){animation-delay:4s}.diffrow:nth-child(4){animation-delay:6s}
+@keyframes rowhl{0%,30%{background:rgba(34,211,238,.08);box-shadow:inset 2px 0 0 var(--cyan)}34%,100%{background:transparent;box-shadow:none}}
+.diffrow em{font-style:normal;display:flex;gap:6px;align-items:center}
+.diffrow .b{color:#fda4b4;background:rgba(244,63,94,.12);padding:1px 6px;border-radius:4px;text-decoration:line-through;text-decoration-color:rgba(244,63,94,.6)}
+.diffrow .a{color:#86efc5;background:rgba(52,211,153,.12);padding:1px 6px;border-radius:4px}
+.ring{display:flex;align-items:center;gap:16px}
+.ring svg{width:86px;height:86px;flex:none}
+.ring .arc{stroke-dasharray:226;stroke-dashoffset:226;animation:fill 4s ease-in-out infinite}
+@keyframes fill{0%{stroke-dashoffset:226}45%,80%{stroke-dashoffset:22}100%{stroke-dashoffset:226}}
+.ring small{font:500 11.5px/1.6 var(--m);color:var(--muted)}
+.ring small b{color:var(--ink);font:700 22px var(--d);display:block}
+.drop{height:96px;display:flex;align-items:flex-end;justify-content:center;gap:4px}
+.drop .fold{width:86px;height:54px;border-radius:6px 6px 10px 10px;background:linear-gradient(180deg,rgba(34,211,238,.25),rgba(34,211,238,.08));border:1px solid rgba(34,211,238,.45);position:relative;z-index:2}
+.drop .fold:before{content:"";position:absolute;left:6px;top:-9px;width:30px;height:10px;border-radius:4px 4px 0 0;background:rgba(34,211,238,.25);border:1px solid rgba(34,211,238,.45);border-bottom:0}
+.drop .f{position:absolute;top:-30px;width:22px;height:28px;border-radius:3px;background:#0f1a27;border:1px solid var(--line2);font:600 7px/28px var(--m);text-align:center;color:var(--cyan);animation:fall 3s cubic-bezier(.5,0,.7,1) infinite}
+.drop .f:nth-child(2){animation-delay:1s;left:calc(50% - 20px)}.drop .f:nth-child(3){animation-delay:2s;left:calc(50% + 2px)}.drop .f:nth-child(1){left:calc(50% - 9px)}
+@keyframes fall{0%{transform:translateY(0);opacity:0}15%{opacity:1}70%{transform:translateY(78px);opacity:1}80%,100%{transform:translateY(84px);opacity:0}}
+.drop .ping{position:absolute;right:14px;top:12px;font:600 10px var(--m);color:var(--crit);border:1px solid rgba(244,63,94,.5);background:rgba(244,63,94,.12);padding:2px 6px;border-radius:5px;animation:ping 3s infinite}
+@keyframes ping{0%,65%{opacity:0;transform:translateY(4px)}72%,95%{opacity:1;transform:none}100%{opacity:0}}
+.matrix{display:grid;grid-template-columns:repeat(12,1fr);gap:4px}
+.matrix i{aspect-ratio:1;border-radius:3px;background:rgba(52,211,153,.55);animation:cell 5s infinite}
+@keyframes cell{0%,100%{filter:brightness(1)}50%{filter:brightness(1.6)}}
+.bars{display:grid;gap:8px}
+.bars div{display:grid;grid-template-columns:86px 1fr;gap:10px;align-items:center;font:500 11px var(--m);color:var(--muted)}
+.bars span{height:7px;border-radius:4px;background:linear-gradient(90deg,var(--c),transparent);transform-origin:0;animation:bar 4s ease-in-out infinite}
+@keyframes bar{0%{transform:scaleX(.15)}50%{transform:scaleX(1)}100%{transform:scaleX(.15)}}
+.chips span{transition:all .3s}
+.card:hover .chips span{border-color:rgba(34,211,238,.35);color:var(--ink)}
+.cycle span{animation:chipglow 6s infinite}
+.cycle span:nth-child(2){animation-delay:1s}.cycle span:nth-child(3){animation-delay:2s}.cycle span:nth-child(4){animation-delay:3s}.cycle span:nth-child(5){animation-delay:4s}.cycle span:nth-child(6){animation-delay:5s}
+@keyframes chipglow{0%,12%{border-color:rgba(34,211,238,.7);color:#fff;box-shadow:0 0 14px -2px rgba(34,211,238,.6)}20%,100%{}}
+
+/* levels meter */
+.rung{grid-template-columns:150px 1fr 120px}
+.meter{height:6px;border-radius:4px;background:rgba(255,255,255,.05);overflow:hidden}
+.meter i{display:block;height:100%;width:var(--v);background:linear-gradient(90deg,transparent,var(--c));border-radius:4px;transform-origin:0;transform:scaleX(0);transition:transform 1.2s cubic-bezier(.2,.7,.2,1) .3s}
+.ladder.on .meter i{transform:scaleX(1)}
+.rung:first-child h4{position:relative}.rung:first-child h4:after{content:"";position:absolute;left:-13px;top:9px;width:7px;height:7px;border-radius:50%;background:var(--crit);animation:pulse 1.6s infinite}
+
+/* score rings */
+.gauge{position:relative;overflow:hidden}
+.gauge .orbit{position:absolute;left:50%;top:44%;width:360px;height:360px;margin:-180px 0 0 -180px;pointer-events:none}
+.gauge .orbit circle{fill:none;stroke-linecap:round}
+.gauge .o1{animation:spin 26s linear infinite;transform-origin:180px 180px}
+.gauge .o2{animation:spin 18s linear infinite reverse;transform-origin:180px 180px}
+.gauge svg:not(.orbit){position:relative}
+.checks .group li{transition:transform .25s,color .25s}
+.checks .group li:hover{transform:translateX(4px);color:var(--cyan)}
+
+/* pipeline beam */
+.pipe{position:relative}
+.pipe:before{content:"";position:absolute;left:0;right:0;top:50%;height:2px;z-index:-1;background:linear-gradient(90deg,transparent,rgba(34,211,238,.4),rgba(139,124,246,.4),transparent)}
+.pipe:after{content:"";position:absolute;top:calc(50% - 3px);left:0;width:160px;height:8px;z-index:-1;border-radius:8px;background:radial-gradient(closest-side,rgba(34,211,238,.9),transparent);filter:blur(2px);animation:beamx 4s linear infinite}
+@keyframes beamx{from{transform:translateX(-160px)}to{transform:translateX(1180px)}}
+.step small{display:inline-flex;align-items:center;gap:8px}
+.step small:before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;animation:pulse 2s infinite}
+
+/* privacy icons */
+.pv .pi{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;margin-bottom:14px;color:var(--mint);background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.3);position:relative}
+.pv .pi svg{width:20px;height:20px}
+.pv .pi:after{content:"";position:absolute;inset:-6px;border-radius:14px;border:1px solid rgba(52,211,153,.35);animation:halo 2.8s ease-out infinite}
+.pv:nth-child(2) .pi:after{animation-delay:.7s}.pv:nth-child(3) .pi:after{animation-delay:1.4s}.pv:nth-child(4) .pi:after{animation-delay:2.1s}
+@keyframes halo{from{transform:scale(.8);opacity:1}to{transform:scale(1.35);opacity:0}}
+
+/* faq */
+details{position:relative;overflow:hidden}
+details:before{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--grad);transform:scaleY(0);transition:transform .3s}
+details[open]:before,details:hover:before{transform:scaleY(1)}
+
+
+.tl{display:flex;flex-direction:column}
+@media (min-width:1021px){.tl-chart{height:255px}}
+.ck{display:grid;gap:7px;margin-top:12px}.ck div{display:flex;align-items:center;gap:10px;font:500 12px var(--m);color:var(--soft)}.ck i{font-style:normal;width:18px;height:18px;border-radius:5px;display:grid;place-items:center;font-size:11px;font-weight:700}.ck .p{color:#34d399;background:rgba(52,211,153,.12)}.ck .w{color:#fbbf24;background:rgba(251,191,36,.12)}.ck .f{color:#f43f5e;background:rgba(244,63,94,.12)}.ck em{font-style:normal;margin-left:auto;color:var(--muted)}
+.tl-sum{margin-top:auto;padding-top:20px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.tl-sum div{padding:14px 16px;border-radius:12px;border:1px dashed var(--line2);background:rgba(3,6,10,.45)}
+.tl-sum small{display:block;font:500 10.5px var(--m);letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
+.tl-sum b{font:700 24px/1.3 var(--d);color:var(--ink)}
+.tl-sum b em{font-style:normal;font-size:13px;color:var(--muted);margin-left:4px;font-weight:500}
+.cli{align-items:stretch}
+.exits{grid-auto-rows:1fr}
+.rep{margin-top:18px;border-radius:12px;border:1px solid var(--line);background:rgba(3,6,10,.6);overflow:hidden}
+.rep .rb{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line);font:500 11px var(--m);color:var(--muted)}
+.rep .rb i{width:7px;height:7px;border-radius:50%;background:var(--line2)}
+.rep .rb span{margin-left:auto;padding:2px 8px;border-radius:5px;border:1px solid var(--line);color:var(--soft)}
+.rep .rr{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:8px 12px;font:500 12px var(--m);color:var(--soft);border-bottom:1px solid rgba(120,200,230,.06)}
+.rep .rr:last-child{border-bottom:0}
+.rep .rr em{font-style:normal;color:var(--muted)}
+
+@media (max-width:1020px){
+  .hero .wrap,.drift,.scorebox,.cli,.dl .wrapdl{grid-template-columns:minmax(0,1fr)}
+  .hero .wrap>*,.drift>*,.scorebox>*,.cli>*,.dl .wrapdl>*{min-width:0}
+  .bento{grid-template-columns:repeat(2,1fr)}.s2,.s3,.s4{grid-column:span 2}
+  .strip .wrap{grid-template-columns:repeat(3,1fr)}.stat:nth-child(4){border-left:0}
+  .pipe{grid-template-columns:1fr;gap:10px}.arrow{width:auto;height:30px;transform:rotate(90deg)}
+  .priv{grid-template-columns:repeat(2,1fr)}
+  .faq{grid-template-columns:1fr}
+}
+@media (max-width:760px){
+  .nav nav{display:none;position:absolute;top:64px;left:0;right:0;flex-direction:column;background:rgba(4,7,11,.97);border-bottom:1px solid var(--line);padding:10px 20px 16px}
+  .nav nav.open{display:flex}
+  .menu{display:grid;place-items:center;margin-left:auto}
+  .nav .btn.sm{display:none}
+  .hero{padding-top:48px}
+  .c-body{grid-template-columns:1fr}.radar{flex-direction:row;justify-content:center;border-right:0;border-bottom:1px solid var(--line)}
+  .strip .wrap{grid-template-columns:repeat(2,1fr)}.stat{border-left:0;border-top:1px solid var(--line)}
+  .rung{grid-template-columns:1fr;gap:12px}
+  .checks{grid-template-columns:1fr}
+  .tl-nodes{grid-template-columns:1fr}
+  .priv{grid-template-columns:1fr}
+  .dl{padding:30px 22px}
+  .capt{grid-template-columns:1fr}
+  section{padding-top:84px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.js .reveal,.js .ladder .rung,.js .term .ln{opacity:1;transform:none}#tlline{stroke-dashoffset:0}#tlarea{opacity:1}html{scroll-behavior:auto}#net,.cursor,#dust{display:none}.meter i{transform:none}}
+@media (max-width:760px){.tl-sum{grid-template-columns:repeat(2,1fr)}.rung{grid-template-columns:1fr}.bigword{display:none}.floor,.cursor{display:none}.aurora{opacity:.35}.console{animation:none}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="bgfx" aria-hidden="true"></div>
+<div class="progress" aria-hidden="true"></div>
+<div class="cursor" aria-hidden="true"></div>
+<canvas id="dust" aria-hidden="true"></canvas>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="DriftWatch home"><img src="img/logo.png" alt="" width="28" height="28">DriftWatch <span class="tag">BETA</span></a>
+    <nav id="menu" aria-label="Page sections">
+      <a href="#drift">How it works</a>
+      <a href="#tour">Tour</a>
+      <a href="#score">Security score</a>
+      <a href="#cli">Command line</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <button class="menu" type="button" aria-label="Open menu" aria-controls="menu" aria-expanded="false"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+    <a class="btn primary sm" href="#download">Download</a>
+  </div>
+</header>
+
+<main id="main">
+<section class="hero" id="top" style="padding-top:76px">
+  <div class="hero-bg" aria-hidden="true">
+    <div class="aurora a1"></div><div class="aurora a2"></div><div class="aurora a3"></div>
+    <canvas id="net"></canvas>
+    <div class="floor"></div>
+    <div class="scanline"></div>
+  </div>
+  <div class="wrap">
+    <div>
+      <a class="kicker" href="https://github.com/FlickerDampa/DriftWatch/releases/tag/v1.0.0-beta.1"><span class="pulse"></span>v1.0.0-beta.1 · free and open source</a>
+      <h1>Your PCs drift.<br><span class="g">DriftWatch notices.</span></h1>
+      <p class="lead">A new admin account. Antivirus switched off. BitLocker suspended and never resumed. DriftWatch compares every DeviceDossier audit with the last one, scores each PC's security out of 100, and puts the risky changes at the top.</p>
+      <div class="cta">
+        <a class="btn primary" href="https://github.com/FlickerDampa/DriftWatch/releases/download/v1.0.0-beta.1/DriftWatch.zip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5V15M7 10l5 5 5-5M4 20h16"/></svg>Download for Windows</a>
+        <a class="btn ghost" href="https://github.com/FlickerDampa/DriftWatch"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.4c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.33-1.29-1.69-1.29-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.04 1.77 2.72 1.26 3.38.96.1-.75.4-1.26.74-1.55-2.56-.29-5.25-1.28-5.25-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.7 5.38-5.26 5.67.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>View on GitHub</a>
+      </div>
+      <div class="meta"><span>Windows 10 &amp; 11</span><span>Portable, 180 KB</span><span>Works offline</span><span>MIT licence</span></div>
+    </div>
+
+    <div class="console" aria-label="Example of DriftWatch detecting changes between audits">
+      <div class="c-top"><div class="dots"><i></i><i></i><i></i></div>driftwatch · \\server\it\Audits<span class="live"><span class="pulse"></span>watching</span></div>
+      <div class="c-body">
+        <div class="radar" aria-hidden="true">
+          <svg viewBox="0 0 120 120">
+            <defs><linearGradient id="sw" x1="0" x2="1"><stop offset="0" stop-color="#22d3ee" stop-opacity="0"/><stop offset="1" stop-color="#22d3ee" stop-opacity=".5"/></linearGradient></defs>
+            <circle cx="60" cy="60" r="56" fill="none" stroke="rgba(120,200,230,.18)"/>
+            <circle cx="60" cy="60" r="38" fill="none" stroke="rgba(120,200,230,.14)"/>
+            <circle cx="60" cy="60" r="20" fill="none" stroke="rgba(120,200,230,.12)"/>
+            <path d="M60 4v112M4 60h112" stroke="rgba(120,200,230,.1)"/>
+            <path class="sweep" d="M60 60L60 4A56 56 0 0 1 108.5 32Z" fill="url(#sw)"/>
+            <circle cx="84" cy="34" r="3.5" fill="#f43f5e"><animate attributeName="opacity" values="1;.25;1" dur="1.6s" repeatCount="indefinite"/></circle>
+            <circle cx="40" cy="78" r="3" fill="#fb923c"/>
+            <circle cx="74" cy="86" r="2.5" fill="#34d399"/>
+            <circle cx="30" cy="44" r="2.5" fill="#34d399"/>
+          </svg>
+          <div class="score"><b class="bad" id="hs">58</b>SCORE · WAS 100</div>
+        </div>
+        <div class="feed" id="feed" aria-live="off">
+          <div class="ev"><span class="sev c">CRIT</span><span class="t">New local administrator</span><span class="d"><em>DEMO-LAPTOP-01</em> · support.temp added</span></div>
+          <div class="ev"><span class="sev c">CRIT</span><span class="t">Real-time protection turned off</span><span class="d"><em>DEMO-LAPTOP-01</em> · Defender: On → Off</span></div>
+          <div class="ev"><span class="sev h">HIGH</span><span class="t">Remote-access software installed</span><span class="d"><em>DEMO-LAPTOP-01</em> · AnyDesk 9.0.4</span></div>
+          <div class="ev"><span class="sev m">MED</span><span class="t">Drive health falling fast</span><span class="d"><em>DEMO-LAPTOP-01</em> · 98% → 86%</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ticker" aria-hidden="true"><div class="row"><span class="tk"><span class="sev c">CRIT</span><b>DEMO-LAPTOP-01</b>New local administrator</span><span class="tk"><span class="sev i">INFO</span><b>FIN-LAPTOP-03</b>Security update installed</span><span class="tk"><span class="sev h">HIGH</span><b>ENG-WS-02</b>SMBv1 turned on</span><span class="tk"><span class="sev m">MED</span><b>HR-LAPTOP-05</b>Definitions 21 days old</span><span class="tk"><span class="sev c">CRIT</span><b>DEMO-LAPTOP-01</b>BitLocker turned off on C:</span><span class="tk"><span class="sev l">LOW</span><b>FIN-LAPTOP-03</b>New software: Microsoft Teams</span><span class="tk"><span class="sev h">HIGH</span><b>HR-LAPTOP-05</b>qBittorrent installed</span><span class="tk"><span class="sev i">INFO</span><b>RECEPTION-PC</b>Firewall turned back on</span><span class="tk"><span class="sev c">CRIT</span><b>ENG-WS-02</b>New local administrator</span><span class="tk"><span class="sev h">HIGH</span><b>DEMO-LAPTOP-01</b>Remote Desktop turned on</span><span class="tk"><span class="sev m">MED</span><b>ENG-WS-02</b>Drive health 98% → 71%</span><span class="tk"><span class="sev l">LOW</span><b>MGMT-SURFACE</b>BIOS updated</span><span class="tk"><span class="sev c">CRIT</span><b>DEMO-LAPTOP-01</b>New local administrator</span><span class="tk"><span class="sev i">INFO</span><b>FIN-LAPTOP-03</b>Security update installed</span><span class="tk"><span class="sev h">HIGH</span><b>ENG-WS-02</b>SMBv1 turned on</span><span class="tk"><span class="sev m">MED</span><b>HR-LAPTOP-05</b>Definitions 21 days old</span><span class="tk"><span class="sev c">CRIT</span><b>DEMO-LAPTOP-01</b>BitLocker turned off on C:</span><span class="tk"><span class="sev l">LOW</span><b>FIN-LAPTOP-03</b>New software: Microsoft Teams</span><span class="tk"><span class="sev h">HIGH</span><b>HR-LAPTOP-05</b>qBittorrent installed</span><span class="tk"><span class="sev i">INFO</span><b>RECEPTION-PC</b>Firewall turned back on</span><span class="tk"><span class="sev c">CRIT</span><b>ENG-WS-02</b>New local administrator</span><span class="tk"><span class="sev h">HIGH</span><b>DEMO-LAPTOP-01</b>Remote Desktop turned on</span><span class="tk"><span class="sev m">MED</span><b>ENG-WS-02</b>Drive health 98% → 71%</span><span class="tk"><span class="sev l">LOW</span><b>MGMT-SURFACE</b>BIOS updated</span></div></div>
+  <div class="strip">
+    <div class="wrap">
+      <div class="stat"><b data-count="20">20</b><span>security checks per audit</span></div>
+      <div class="stat"><b data-count="5">5</b><span>risk levels, Critical to Info</span></div>
+      <div class="stat"><b>0</b><span>bytes sent anywhere</span></div>
+      <div class="stat"><b data-count="4">4</b><span>export formats</span></div>
+      <div class="stat"><b>1</b><span>portable exe, no install</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="drift">
+  <div class="wrap">
+    <div class="head reveal">
+      <div class="eyebrow">How drift happens</div>
+      <h2>One audit is a snapshot. Two audits tell a story.</h2>
+      <p class="sub">PCs rarely break in one go. They drift, one changed setting at a time. Pick an audit below to see what DriftWatch found between it and the one before.</p>
+    </div>
+    <div class="drift reveal">
+      <div class="spot panel tl">
+        <div class="tl-chart">
+          <svg viewBox="0 0 600 210" preserveAspectRatio="none" aria-label="Security score across three audits: 100, 100, then 58">
+            <defs>
+              <linearGradient id="area" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22d3ee" stop-opacity=".28"/><stop offset="1" stop-color="#22d3ee" stop-opacity="0"/></linearGradient>
+              <linearGradient id="ln" x1="0" x2="1"><stop offset="0" stop-color="#22d3ee"/><stop offset=".6" stop-color="#8b7cf6"/><stop offset="1" stop-color="#fb923c"/></linearGradient>
+            </defs>
+            <g stroke="rgba(120,200,230,.08)"><path d="M0 20H600M0 72H600M0 124H600M0 176H600"/></g>
+            <path d="M0 63H600" stroke="rgba(251,191,36,.5)" stroke-dasharray="6 6"/>
+            <text x="596" y="57" text-anchor="end" fill="#fbbf24" font-family="IBM Plex Mono" font-size="11">MINIMUM 70</text>
+            <path id="tlarea" d="M40 20 L300 20 L560 120 L560 200 L40 200Z" fill="url(#area)"/>
+            <rect id="tlscan" x="0" y="0" width="2" height="200" fill="rgba(34,211,238,.35)"/>
+            <path id="tlline" d="M40 20 L300 20 L560 120" fill="none" stroke="url(#ln)" stroke-width="3" stroke-linejoin="round"/>
+            <g id="pts">
+              <circle cx="40" cy="20" r="7" fill="#0a111b" stroke="#22d3ee" stroke-width="3"/>
+              <circle cx="300" cy="20" r="7" fill="#0a111b" stroke="#8b7cf6" stroke-width="3"/>
+              <circle cx="560" cy="120" r="9" fill="#0a111b" stroke="#fb923c" stroke-width="3"><animate attributeName="r" values="9;12;9" dur="2s" repeatCount="indefinite"/></circle>
+            </g>
+          </svg>
+        </div>
+        <div class="tl-nodes" role="group" aria-label="Choose an audit">
+          <button class="node" type="button" data-a="0" aria-pressed="false"><small>21 OCT · FIRST AUDIT</small><b>Baseline</b><i style="color:#34d399">100</i></button>
+          <button class="node" type="button" data-a="1" aria-pressed="false"><small>04 NOV · 14 DAYS LATER</small><b>Routine</b><i style="color:#34d399">100</i></button>
+          <button class="node" type="button" data-a="2" aria-pressed="true"><small>18 NOV · 14 DAYS LATER</small><b>Drifted</b><i style="color:#fb923c">58</i></button>
+        </div>
+        <div class="tl-sum" aria-label="Summary across all three audits">
+          <div><small>Days tracked</small><b>28</b></div>
+          <div><small>Changes found</small><b>10</b></div>
+          <div><small>Need action</small><b style="color:var(--crit)">7</b></div>
+          <div><small>Score</small><b style="color:var(--high)">&minus;42<em>pts</em></b></div>
+        </div>
+      </div>
+      <div class="spot panel changes" id="changes" aria-live="polite">
+        <h3>What changed <span id="ctag">04 Nov → 18 Nov</span></h3>
+        <div id="clist"></div>
+        <div class="verdict" id="cverdict"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="tour"><div class="orb" style="left:-200px;top:120px;background:#8b7cf6"></div><div class="bigword " data-w="TOUR" aria-hidden="true">TOUR</div>
+  <div class="wrap">
+    <div class="head reveal">
+      <div class="eyebrow">Take the tour</div>
+      <h2>Built for the person who looks after every PC.</h2>
+      <p class="sub">A native Windows app with dark and light themes, sharp at any display scaling. Every screen below is the real app with an anonymised demo fleet of six PCs.</p>
+    </div>
+    <div class="reveal">
+      <div class="tabs" role="tablist" aria-label="App screens">
+        <button role="tab" type="button" aria-selected="true" data-i="0">Overview</button>
+        <button role="tab" type="button" aria-selected="false" data-i="1">Compare</button>
+        <button role="tab" type="button" aria-selected="false" data-i="2">Device</button>
+        <button role="tab" type="button" aria-selected="false" data-i="3">Posture</button>
+        <button role="tab" type="button" aria-selected="false" data-i="4">Software</button>
+        <button role="tab" type="button" aria-selected="false" data-i="5">Checks</button>
+      </div>
+      <div class="monitor" role="tabpanel">
+        <img id="shot" src="img/overview.webp" width="1472" height="893" alt="DriftWatch overview: fleet security score, devices needing attention, score trend and open changes by severity" decoding="async">
+        <div class="glow"></div>
+        <div class="scan"></div>
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+      </div>
+      <div class="capt"><p id="cap"><b>Overview.</b> Fleet security score, PCs that need attention, overdue audits, the score trend over time and open changes by severity, all on one screen.</p><span class="counter" id="cnt">01 / 06</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="features"><div class="bigword l" data-w="INSIDE" aria-hidden="true">INSIDE</div>
+  <div class="wrap">
+    <div class="head reveal">
+      <div class="eyebrow">What's inside</div>
+      <h2>More than a diff. A monitoring console.</h2>
+    </div>
+    <div class="bento">
+      <div class="spot card s4 reveal">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h15M15.5 4.5 19 8l-3.5 3.5M20 16H5M8.5 12.5 5 16l3.5 3.5"/></svg></div>
+        <h3>Compare any two audits</h3>
+        <p>Every difference between two audits of a PC, matched by identity rather than position, ranked Critical to Info, with the old and new values side by side and a plain note on why it matters. Mark the changes you expected and they stop counting.</p>
+        <div class="mini" aria-hidden="true">
+          <div class="diffrow"><span class="sev c">CRIT</span><span>Real-time protection</span><em><span class="b">On</span>→<span class="a">Off</span></em></div>
+          <div class="diffrow"><span class="sev h">HIGH</span><span>Remote Desktop</span><em><span class="b">Disabled</span>→<span class="a">Enabled</span></em></div>
+          <div class="diffrow"><span class="sev m">MED</span><span>DNS servers</span><em><span class="b">1.1.1.1</span>→<span class="a">10.0.0.53</span></em></div>
+          <div class="diffrow"><span class="sev i">INFO</span><span>Google Chrome</span><em><span class="b">131.0.86</span>→<span class="a">131.0.140</span></em></div>
+        </div>
+        <div class="chips"><span>matched by name, account, serial</span><span>run-to-run noise ignored</span><span>direction-aware</span><span>mark as expected</span></div>
+      </div>
+      <div class="spot card s2 reveal">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5 19.5 5.5V11c0 5-3.5 8.5-7.5 10.5C8 19.5 4.5 16 4.5 11V5.5Z"/><path d="m8.8 12 2.2 2.2 4.4-4.4"/></svg></div>
+        <h3>Security score</h3>
+        <p>Every audit graded out of 100 against 20 checks, with advice for each failure.</p>
+        <div class="mini ring" aria-hidden="true"><svg viewBox="0 0 86 86"><circle cx="43" cy="43" r="36" fill="none" stroke="rgba(120,200,230,.12)" stroke-width="8"/><circle class="arc" cx="43" cy="43" r="36" fill="none" stroke="url(#gg)" stroke-width="8" stroke-linecap="round" transform="rotate(-90 43 43)"/></svg><small><b>A · 92</b>20 checks<br>weighted by risk</small></div>
+        <div class="mini ck" aria-hidden="true"><div><i class="p">&#10003;</i>Real-time protection<em>+12</em></div><div><i class="p">&#10003;</i>Firewall, all profiles<em>+10</em></div><div><i class="f">&#10005;</i>Guest account on<em>0</em></div></div>
+      </div>
+      <div class="spot card s2 reveal">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v11a1.5 1.5 0 0 0 1.5 1.5h15A1.5 1.5 0 0 0 21 18v-8.5a1 1 0 0 0-1-1h-8.5L9.5 5.5h-5A1.5 1.5 0 0 0 3 7z"/></svg></div>
+        <h3>Folder watching</h3>
+        <p>Point it at the share where DeviceDossier saves audits. New reports are scored the moment they land, with a Windows notification for high-risk changes.</p>
+        <div class="mini drop" aria-hidden="true"><span class="f">XML</span><span class="f">XML</span><span class="f">XML</span><div class="fold"></div><span class="ping">NEW · CRIT</span></div>
+      </div>
+      <div class="spot card s2 reveal">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5"/></svg></div>
+        <h3>Compliance matrix</h3>
+        <p>Every PC against every control in one grid, plus pass rates for each check across the fleet.</p>
+        <div class="mini matrix" aria-hidden="true"><i style="background:rgba(52,211,153,.55);animation-delay:4.7s"></i><i style="background:rgba(52,211,153,.55);animation-delay:3.3s"></i><i style="background:rgba(52,211,153,.55);animation-delay:4.1s"></i><i style="background:rgba(52,211,153,.55);animation-delay:1.8s"></i><i style="background:rgba(52,211,153,.55);animation-delay:4.5s"></i><i style="background:rgba(52,211,153,.55);animation-delay:0.2s"></i><i style="background:rgba(52,211,153,.55);animation-delay:2.1s"></i><i style="background:rgba(52,211,153,.55);animation-delay:0.5s"></i><i style="background:rgba(52,211,153,.55);animation-delay:0.3s"></i><i style="background:rgba(251,191,36,.7);animation-delay:0.6s"></i><i style="background:rgba(52,211,153,.55);animation-delay:3.2s"></i><i style="background:rgba(251,191,36,.7);animation-delay:4.7s"></i><i style="background:rgba(251,191,36,.7);animation-delay:2.9s"></i><i style="background:rgba(52,211,153,.55);animation-delay:4.9s"></i><i style="background:rgba(52,211,153,.55);animation-delay:2.8s"></i><i style="background:rgba(52,211,153,.55);animation-delay:1.4s"></i><i style="background:rgba(52,211,153,.55);animation-delay:2.7s"></i><i style="background:rgba(251,191,36,.7);animation-delay:1.5s"></i><i style="background:rgba(244,63,94,.75);animation-delay:0.9s"></i><i style="background:rgba(251,191,36,.7);animation-delay:2.9s"></i><i style="background:rgba(52,211,153,.55);animation-delay:1.9s"></i><i style="background:rgba(52,211,153,.55);animation-delay:3.6s"></i><i style="background:rgba(251,191,36,.7);animation-delay:0.3s"></i><i style="background:rgba(52,211,153,.55);animation-delay:2.5s"></i><i style="background:rgba(52,211,153,.55);animation-delay:2.1s"></i><i style="background:rgba(52,211,153,.55);animation-delay:2.3s"></i><i style="background:rgba(52,211,153,.55);animation-delay:1.8s"></i><i style="background:rgba(52,211,153,.55);animation-delay:4.0s"></i><i style="background:rgba(120,140,160,.25);animation-delay:3.9s"></i><i style="background:rgba(52,211,153,.55);animation-delay:2.9s"></i><i style="background:rgba(52,211,153,.55);animation-delay:2.5s"></i><i style="background:rgba(52,211,153,.55);animation-delay:3.6s"></i><i style="background:rgba(52,211,153,.55);animation-delay:3.0s"></i><i style="background:rgba(52,211,153,.55);animation-delay:0.6s"></i><i style="background:rgba(52,211,153,.55);animation-delay:0.8s"></i><i style="background:rgba(52,211,153,.55);animation-delay:0.8s"></i><i style="background:rgba(52,211,153,.55);animation-delay:2.1s"></i><i style="background:rgba(244,63,94,.75);animation-delay:0.4s"></i><i style="background:rgba(52,211,153,.55);animation-delay:2.9s"></i><i style="background:rgba(52,211,153,.55);animation-delay:1.7s"></i><i style="background:rgba(52,211,153,.55);animation-delay:3.0s"></i><i style="background:rgba(251,191,36,.7);animation-delay:4.0s"></i><i style="background:rgba(52,211,153,.55);animation-delay:4.2s"></i><i style="background:rgba(52,211,153,.55);animation-delay:2.4s"></i><i style="background:rgba(244,63,94,.75);animation-delay:0.3s"></i><i style="background:rgba(120,140,160,.25);animation-delay:3.5s"></i><i style="background:rgba(244,63,94,.75);animation-delay:2.9s"></i><i style="background:rgba(244,63,94,.75);animation-delay:4.1s"></i></div>
+      </div>
+      <div class="spot card s2 reveal">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5 20.5 7v10L12 21.5 3.5 17V7Z"/><path d="M3.8 7.2 12 11.8l8.2-4.6M12 11.8v9.4"/></svg></div>
+        <h3>Software inventory</h3>
+        <p>Every program across the fleet. Remote-access, tunnelling, torrent and hacking tools are flagged. Ban, approve or require one in a click.</p>
+        <div class="mini bars" aria-hidden="true"><div>AnyDesk<span style="--c:#fb923c;animation-delay:0s"></span></div><div>7-Zip<span style="--c:#22d3ee;animation-delay:.6s"></span></div><div>qBittorrent<span style="--c:#f43f5e;animation-delay:1.2s"></span></div><div>Chrome<span style="--c:#8b7cf6;animation-delay:1.8s"></span></div></div>
+      </div>
+      <div class="spot card s3 reveal">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="2.5" width="15" height="19" rx="2"/><path d="M8.5 8h7M8.5 12h7M8.5 16H12"/></svg></div>
+        <h3>Your policy, your rules</h3>
+        <p>Banned, approved and required software, approved admin accounts, and thresholds for patch age, definition age, overdue audits and the minimum score. Saved as a small JSON file you can share with the command line.</p>
+        <div class="term art"><pre><span class="c">// policy.json</span>
+{
+  <span class="k">"bannedSoftware"</span>: [<span class="ok">"utorrent"</span>, <span class="ok">"*crack*"</span>],
+  <span class="k">"approvedSoftware"</span>: [<span class="ok">"TeamViewer"</span>],
+  <span class="k">"approvedAdmins"</span>: [<span class="ok">"it.admin"</span>],
+  <span class="k">"maxPatchAgeDays"</span>: <span class="w">45</span>,
+  <span class="k">"minimumScore"</span>: <span class="w">70</span>
+}</pre></div>
+      </div>
+      <div class="spot card s3 reveal">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5V15M7 10l5 5 5-5M4 20h16"/></svg></div>
+        <h3>Reports people actually read</h3>
+        <p>A self-contained HTML report that opens anywhere with filters and search, CSV for Excel, JSON for scripts and SIEMs, and a short Markdown summary you can paste straight into a ticket.</p>
+        <div class="chips cycle"><span>HTML</span><span>CSV</span><span>JSON</span><span>Markdown</span><span>fleet report</span><span>per-PC report</span></div>
+        <div class="chips"><span>Ctrl+K search</span><span>dark &amp; light</span><span>keyboard shortcuts</span><span>drag and drop</span></div>
+        <div class="rep" aria-hidden="true">
+          <div class="rb"><i></i><i></i><i></i>drift.html<span>Filter: High+</span></div>
+          <div class="rr"><span class="sev c">CRIT</span><span>DEMO-LAPTOP-01 · Real-time protection</span><em>On → Off</em></div>
+          <div class="rr"><span class="sev c">CRIT</span><span>ENG-WS-02 · New local admin</span><em>added</em></div>
+          <div class="rr"><span class="sev h">HIGH</span><span>HR-LAPTOP-05 · AnyDesk 9.0.4</span><em>installed</em></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="levels"><div class="orb" style="right:-240px;top:200px;background:#f43f5e;opacity:.12"></div><div class="bigword " data-w="RISK" aria-hidden="true">RISK</div>
+  <div class="wrap">
+    <div class="head reveal">
+      <div class="eyebrow">Risk levels</div>
+      <h2>Not every change deserves your morning.</h2>
+      <p class="sub">Each change is sorted into one of five levels by security-first rules, so a Chrome update never sits above a disabled firewall.</p>
+    </div>
+    <div class="ladder reveal">
+      <div class="rung" style="--v:100%;--c:var(--crit);--tint:rgba(244,63,94,.12)"><h4>Critical<small>ACT NOW</small></h4><ul><li>New local administrator</li><li>Real-time protection off</li><li>Antivirus removed</li><li>BitLocker turned off</li><li>Firewall off on public networks</li><li>Drive being decrypted</li></ul><div class="meter" aria-hidden="true"><i></i></div></div>
+      <div class="rung" style="--v:78%;--c:var(--high);--tint:rgba(251,146,60,.11)"><h4>High<small>REVIEW SOON</small></h4><ul><li>Remote Desktop turned on</li><li>Secure Boot or UAC off</li><li>SMBv1 or Guest turned on</li><li>Drive mapped to an unknown server</li><li>Remote-access or torrent software</li><li>Banned software installed</li><li>Windows reinstalled</li></ul><div class="meter" aria-hidden="true"><i></i></div></div>
+      <div class="rung" style="--v:55%;--c:var(--med);--tint:rgba(250,204,21,.09)"><h4>Medium<small>WORTH A LOOK</small></h4><ul><li>DNS servers changed</li><li>New VPN adapter</li><li>Software rolled back</li><li>Drive health falling fast</li><li>Definitions out of date</li></ul><div class="meter" aria-hidden="true"><i></i></div></div>
+      <div class="rung" style="--v:32%;--c:var(--low);--tint:rgba(96,165,250,.09)"><h4>Low<small>ROUTINE</small></h4><ul><li>New software or extensions</li><li>Software removed</li><li>Restart pending</li><li>BIOS updated</li></ul><div class="meter" aria-hidden="true"><i></i></div></div>
+      <div class="rung" style="--v:14%;--c:var(--info);--tint:rgba(148,163,184,.08)"><h4>Info<small>FOR THE RECORD</small></h4><ul><li>Updates installed</li><li>Monitor connected</li><li>IP address changed</li><li>Firewall turned back on</li></ul><div class="meter" aria-hidden="true"><i></i></div></div>
+    </div>
+    <p class="note reveal">Direction matters: a firewall going <code>On → Off</code> is Critical, while <code>Off → On</code> is good news. Values that change on every run, such as last boot time and battery charge, are ignored.</p>
+  </div>
+</section>
+
+<section id="score"><div class="orb" style="right:-180px;top:160px;background:#22d3ee"></div><div class="bigword l" data-w="SCORE" aria-hidden="true">SCORE</div>
+  <div class="wrap">
+    <div class="head reveal">
+      <div class="eyebrow">Security score</div>
+      <h2>Twenty checks. One honest number.</h2>
+      <p class="sub">Passes earn the full weight and warnings earn half. Checks an audit couldn't report are left out rather than counted against the PC. Fail antivirus, real-time protection or system-drive encryption and the score is capped at 69, so a PC with protection switched off can never look healthy.</p>
+    </div>
+    <div class="scorebox reveal">
+      <div class="spot panel gauge">
+        <svg class="orbit" viewBox="0 0 360 360" aria-hidden="true"><circle class="o1" cx="180" cy="180" r="170" stroke="rgba(34,211,238,.25)" stroke-width="1" stroke-dasharray="2 10"/><circle class="o2" cx="180" cy="180" r="150" stroke="rgba(139,124,246,.35)" stroke-width="2" stroke-dasharray="60 400"/><circle class="o1" cx="180" cy="180" r="130" stroke="rgba(34,211,238,.4)" stroke-width="2" stroke-dasharray="30 300"/></svg>
+        <svg viewBox="0 0 220 220" aria-hidden="true">
+          <defs><linearGradient id="gg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22d3ee"/><stop offset="1" stop-color="#8b7cf6"/></linearGradient></defs>
+          <circle cx="110" cy="110" r="92" fill="none" stroke="rgba(120,200,230,.1)" stroke-width="14"/>
+          <circle id="arc" cx="110" cy="110" r="92" fill="none" stroke="url(#gg)" stroke-width="14" stroke-linecap="round" stroke-dasharray="578" stroke-dashoffset="578" transform="rotate(-90 110 110)" style="transition:stroke-dashoffset 1.6s cubic-bezier(.2,.8,.2,1)"/>
+          <text x="110" y="122" text-anchor="middle" class="num" fill="#e9f1f7" font-family="Space Grotesk" font-weight="700" font-size="58" id="gnum">0</text>
+          <text x="110" y="150" text-anchor="middle" fill="#34d399" font-family="IBM Plex Mono" font-size="13" font-weight="600" id="ggrade">GRADE A</text>
+        </svg>
+        <p>A well-kept finance laptop from the demo fleet. Every check passes.</p>
+        <div class="grades"><span>A 90+</span><span>B 80+</span><span>C 70+</span><span>D 60+</span><span>F</span></div>
+      </div>
+      <div class="spot panel checks">
+        <div class="group"><h4>Endpoint protection</h4><ul><li>Antivirus or EDR installed</li><li>Real-time protection on</li><li>Definitions up to date</li></ul></div>
+        <div class="group"><h4>Encryption</h4><ul><li>System drive encrypted</li><li>Other drives encrypted</li></ul></div>
+        <div class="group"><h4>Network exposure</h4><ul><li>Firewall on for every network type</li><li>Remote Desktop off</li><li>SMBv1 off</li><li>Mapped drives point to known servers</li></ul></div>
+        <div class="group"><h4>Identity and access</h4><ul><li>Few, approved local admins</li><li>User Account Control on</li><li>Guest account off</li></ul></div>
+        <div class="group"><h4>Updates</h4><ul><li>Security updates installed recently</li><li>No restart pending</li></ul></div>
+        <div class="group"><h4>Platform</h4><ul><li>Secure Boot on</li><li>TPM present and ready</li><li>Windows activated</li></ul></div>
+        <div class="group"><h4>Software</h4><ul><li>No risky or banned software</li><li>Required software installed</li></ul></div>
+        <div class="group"><h4>Audit</h4><ul><li>Complete audit, run as administrator</li></ul></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="pipeline"><div class="bigword " data-w="PIPELINE" aria-hidden="true">PIPELINE</div>
+  <div class="wrap">
+    <div class="head reveal">
+      <div class="eyebrow">Works with DeviceDossier</div>
+      <h2>Audit, then monitor.</h2>
+      <p class="sub"><a href="https://flickerdampa.github.io/devicedossier/" style="color:var(--cyan)">DeviceDossier</a> captures a complete picture of a PC. DriftWatch turns a folder of those pictures into continuous monitoring.</p>
+    </div>
+    <div class="pipe reveal">
+      <div class="spot step"><small>01 · AUDIT</small><h4>DeviceDossier</h4><p>Runs on each PC from a USB drive or a scheduled task and saves an XML audit.</p></div>
+      <div class="arrow" aria-hidden="true"><span class="pk"></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path class="flow" d="M2 12h17"/><path d="m15 7 5 5-5 5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="spot step"><small>02 · COLLECT</small><h4>One shared folder</h4><p>Audits from every PC land in one place, re-run weekly or monthly.</p></div>
+      <div class="arrow" aria-hidden="true"><span class="pk"></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path class="flow" d="M2 12h17"/><path d="m15 7 5 5-5 5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="spot step hl"><small>03 · ANALYSE</small><h4>DriftWatch</h4><p>Scores each audit, compares it with the one before and ranks every change.</p></div>
+      <div class="arrow" aria-hidden="true"><span class="pk"></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path class="flow" d="M2 12h17"/><path d="m15 7 5 5-5 5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="spot step"><small>04 · ACT</small><h4>Alerts and reports</h4><p>Notifications, HTML and CSV reports, and exit codes your RMM can act on.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="cli"><div class="orb" style="left:-220px;top:200px;background:#22d3ee"></div><div class="bigword l" data-w="CLI" aria-hidden="true">CLI</div>
+  <div class="wrap">
+    <div class="head reveal">
+      <div class="eyebrow">Command line</div>
+      <h2>The same engine, from a scheduled task.</h2>
+      <p class="sub">Run it from Task Scheduler, Group Policy, Intune or your RMM. Exit codes tell the script whether anything needs a human.</p>
+    </div>
+    <div class="cli reveal">
+      <div class="term">
+        <div class="bar"><div class="dots"><i></i><i></i><i></i></div>PowerShell</div>
+<pre><span class="ln"><span class="c"># Every PC in the share, with your policy, nightly</span></span>
+<span class="ln"><span class="p">PS&gt;</span> <span class="k">.\DriftWatch.exe</span> --folder \\server\it\Audits --recurse `</span>
+<span class="ln">      --policy policy.json --html drift.html --min-score 70</span>
+<span class="ln"></span>
+<span class="ln">6 devices, 4 compared, average security score 85.</span>
+<span class="ln">  DEMO-LAPTOP-01: <span class="r">Action needed</span> (4 critical, 3 high), score 58</span>
+<span class="ln">  ENG-WS-02:      <span class="r">Action needed</span> (1 critical, 2 high), score 92</span>
+<span class="ln">  HR-LAPTOP-05:   <span class="w">Review soon</span> (1 high), score 91</span>
+<span class="ln">  FIN-LAPTOP-03:  <span class="ok">Routine changes only</span>, score 100</span>
+<span class="ln"></span>
+<span class="ln"><span class="c"># One audit's score and failing checks</span></span>
+<span class="ln"><span class="p">PS&gt;</span> <span class="k">.\DriftWatch.exe</span> --posture PC01.xml --json posture.json</span><span class="caret"></span></pre>
+      </div>
+      <div class="exits">
+        <div class="spot exit"><b>0</b><p><strong>All clear.</strong> Nothing at or above <span class="mono">--fail-on</span> and no score under <span class="mono">--min-score</span>.</p></div>
+        <div class="spot exit"><b style="color:var(--high)">1</b><p><strong>Needs a human.</strong> High-risk changes, or a PC scoring below your minimum.</p></div>
+        <div class="spot exit"><b style="color:var(--muted)">2</b><p><strong>Invalid arguments.</strong> The command line didn't make sense.</p></div>
+        <div class="spot exit"><b style="color:var(--crit)">3</b><p><strong>Couldn't read.</strong> A report or policy file was missing or broken.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="privacy"><div class="bigword " data-w="OFFLINE" aria-hidden="true">OFFLINE</div>
+  <div class="wrap">
+    <div class="head reveal">
+      <div class="eyebrow">Privacy</div>
+      <h2>Your audit data stays on your PC.</h2>
+    </div>
+    <div class="priv reveal">
+      <div class="spot pv"><div class="pi" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8.5a15 15 0 0 1 20 0M5.5 12a10 10 0 0 1 13 0M9 15.5a5 5 0 0 1 6 0"/><path d="M3 3l18 18"/></svg></div><b>Offline</b><p>No network calls, no telemetry, no accounts. It never contacts the PCs it reports on.</p></div>
+      <div class="spot pv"><div class="pi" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12S6 5 12 5s9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7z"/><circle cx="12" cy="12" r="3"/></svg></div><b>Read-only</b><p>It only reads the XML reports you give it and changes nothing on any machine.</p></div>
+      <div class="spot pv"><div class="pi" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6 2.5 12 8 18M16 6l5.5 6-5.5 6"/></svg></div><b>Open source</b><p>Every line is on GitHub under the MIT licence, built and tested in public by GitHub Actions.</p></div>
+      <div class="spot pv"><div class="pi" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></svg></div><b>Hardened</b><p>XML is parsed with DTDs and external entities disabled, and every value is treated as plain text.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="download"><div class="bigword l" data-w="GET IT" aria-hidden="true">GET IT</div>
+  <div class="wrap">
+    <div class="dl reveal">
+      <div class="wrapdl">
+        <div>
+          <div class="eyebrow">Download</div>
+          <h2>Start watching in under a minute.</h2>
+          <p class="sub">Download the zip, extract it anywhere and run <span class="mono">DriftWatch.exe</span>. Then open the folder where DeviceDossier saves its XML audits.</p>
+          <div class="cta" style="margin-top:28px">
+            <a class="btn primary" href="https://github.com/FlickerDampa/DriftWatch/releases/download/v1.0.0-beta.1/DriftWatch.zip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5V15M7 10l5 5 5-5M4 20h16"/></svg>DriftWatch.zip · 180 KB</a>
+            <a class="btn ghost" href="https://github.com/FlickerDampa/DriftWatch/releases">All releases</a>
+          </div>
+          <p class="smart">This beta isn't code-signed yet, so Windows SmartScreen may say "Windows protected your PC". Choose <b>More info → Run anyway</b>, or build it yourself from source in under a minute.</p>
+        </div>
+        <div>
+          <div class="req">
+            <div><span>Version</span><span>1.0.0-beta.1</span></div>
+            <div><span>Works on</span><span>Windows 10 and 11</span></div>
+            <div><span>Needs</span><span>.NET Framework 4.8 (built into Windows)</span></div>
+            <div><span>Install</span><span>None, it's portable</span></div>
+            <div><span>Reads</span><span>DeviceDossier XML reports</span></div>
+            <div><span>Licence</span><span>MIT, free for any use</span></div>
+          </div>
+          <div class="hash"><code id="sha">SHA-256 84cc4880a9a6bea68d97d1320b4d0ec767b897513437efbab33a390b0459961f</code><button type="button" id="copy">Copy</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="faq"><div class="bigword " data-w="FAQ" aria-hidden="true">FAQ</div>
+  <div class="wrap">
+    <div class="head reveal">
+      <div class="eyebrow">FAQ</div>
+      <h2>Questions, answered.</h2>
+    </div>
+    <div class="faq reveal">
+      <details><summary>Do I need DeviceDossier?</summary><p>Yes. DriftWatch reads the XML reports that <a href="https://flickerdampa.github.io/devicedossier/">DeviceDossier</a> saves. Run DeviceDossier on each PC, save as XML, and audit the same PCs again later. Both are free.</p></details>
+      <details><summary>Does it install an agent on my PCs?</summary><p>No. There's nothing to deploy. DriftWatch runs on your own PC and only reads report files from a folder or share you choose.</p></details>
+      <details><summary>Can I try it without real audits?</summary><p>Yes. The repository includes <span class="mono">tests/make_demo.py</span>, which writes the anonymised six-PC demo folder used in the screenshots on this page.</p></details>
+      <details><summary>How is this different from comparing two files?</summary><p>A plain diff shows a program that moved down the list as removed and re-added, and treats a Chrome update the same as a disabled firewall. DriftWatch matches rows by identity, ignores run-to-run noise and ranks each change by security impact.</p></details>
+      <details><summary>What if we use TeamViewer or AnyDesk on purpose?</summary><p>Add it to Approved software on the Policy page, or click Approve on the Software page. It stops being flagged and new installs drop to Low.</p></details>
+      <details><summary>Why does Windows warn me when I run it?</summary><p>The beta isn't code-signed yet, so SmartScreen doesn't recognise the publisher. Choose More info → Run anyway, check the zip against the SHA-256 above, or build it from source with <span class="mono">build.ps1</span>. In a company, copying it to a file share avoids the warning.</p></details>
+      <details><summary>Where are my settings stored?</summary><p>In <span class="mono">%APPDATA%\DriftWatch</span>: a small settings file and your policy. Nothing else is written, and nothing leaves the PC.</p></details>
+      <details><summary>I found a false positive or have an idea.</summary><p>Please open an <a href="https://github.com/FlickerDampa/DriftWatch/issues">issue on GitHub</a>. Security problems can be reported privately as described in the repository's security policy.</p></details>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>DriftWatch · MIT licence · built by <a href="https://flickerdampa.github.io/">FlickerDampa</a></span>
+    <nav aria-label="Footer"><a href="https://github.com/FlickerDampa/DriftWatch">GitHub</a><a href="https://github.com/FlickerDampa/DriftWatch/releases">Releases</a><a href="https://flickerdampa.github.io/devicedossier/">DeviceDossier</a><a href="https://github.com/FlickerDampa/DriftWatch/issues">Feedback</a></nav>
+  </div>
+</footer>
+
+<script>
+(function(){
+document.documentElement.classList.add('js');
+var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+var mb=document.querySelector('.menu'),mn=document.getElementById('menu');
+mb.addEventListener('click',function(){var o=mn.classList.toggle('open');mb.setAttribute('aria-expanded',o)});
+mn.addEventListener('click',function(e){if(e.target.tagName==='A'){mn.classList.remove('open');mb.setAttribute('aria-expanded','false')}});
+
+var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('on');io.unobserve(e.target)}})},{threshold:.12});
+document.querySelectorAll('.reveal').forEach(function(el){io.observe(el)});
+
+function el(tag,cls,txt){var n=document.createElement(tag);if(cls)n.className=cls;if(txt!=null)n.textContent=txt;return n}
+function ev(s,t,d,dev){var r=el('div','ev');r.appendChild(el('span','sev '+s,{c:'CRIT',h:'HIGH',m:'MED',l:'LOW',i:'INFO'}[s]));r.appendChild(el('span','t',t));var x=el('span','d');x.appendChild(el('em',null,dev));x.appendChild(document.createTextNode(' · '+d));r.appendChild(x);return r}
+
+var stream=[
+ ['c','BitLocker protection turned off','C: On → Off','DEMO-LAPTOP-01'],
+ ['h','Drive mapped to an unrecognised server','Z: → \\\\198.51.100.77\\share','DEMO-LAPTOP-01'],
+ ['c','New local administrator','eng.lead added','ENG-WS-02'],
+ ['h','SMBv1 turned on','Disabled → Enabled','ENG-WS-02'],
+ ['h','Potentially unwanted software installed','qBittorrent 5.0.1','HR-LAPTOP-05'],
+ ['l','Restart needed to finish updates','Pending restart: Yes','HR-LAPTOP-05'],
+ ['i','New security update installed','2026-11 cumulative update','FIN-LAPTOP-03'],
+ ['l','New software','Microsoft Teams','FIN-LAPTOP-03'],
+ ['c','Firewall turned off (public networks)','On → Off','DEMO-LAPTOP-01'],
+ ['h','Remote Desktop turned on','Disabled → Enabled','DEMO-LAPTOP-01'],
+ ['m','Defender signatures are 21 days old','updated 28-10-2026','HR-LAPTOP-05'],
+ ['i','Firewall turned on (private networks)','Off → On','RECEPTION-PC']
+];
+var feed=document.getElementById('feed'),si=0;
+if(!reduce)setInterval(function(){var s=stream[si++%stream.length];feed.insertBefore(ev(s[0],s[1],s[2],s[3]),feed.firstChild);while(feed.children.length>7)feed.removeChild(feed.lastChild)},2600);
+
+var audits=[
+ {tag:'21 Oct · first audit',score:100,list:[],verdict:'Baseline audit. Every later audit is compared with this one.',vc:'#34d399'},
+ {tag:'21 Oct → 04 Nov',score:100,list:[['i','New security update installed','2026-10 cumulative update'],['i','Defender signatures updated','1.421.118.0'],['i','Updated: Google Chrome','131.0.6778.86']],verdict:'Routine changes only · score unchanged at 100',vc:'#34d399'},
+ {tag:'04 Nov → 18 Nov',score:58,list:[['c','New local administrator','DEMO-LAPTOP-01\\support.temp'],['c','Real-time protection turned off','Microsoft Defender: On → Off'],['c','BitLocker protection turned off on C:','On → Off'],['c','Firewall turned off (public networks)','On → Off'],['h','Remote-access software installed','AnyDesk 9.0.4'],['h','Drive mapped to an unrecognised server','Z: → 198.51.100.77']],verdict:'Action needed · 4 critical, 3 high · score 100 → 58',vc:'#f43f5e'}
+];
+var nodes=document.querySelectorAll('.node'),clist=document.getElementById('clist');
+function show(i){var a=audits[i];nodes.forEach(function(n){n.setAttribute('aria-pressed',n.dataset.a==i)});document.getElementById('ctag').textContent=a.tag;clist.textContent='';
+ if(!a.list.length){var p=el('div','ch');p.appendChild(el('p',null,'Nothing to compare yet. DriftWatch needs a second audit of the same PC.'));clist.appendChild(p)}
+ a.list.forEach(function(c,k){var r=el('div','ch');r.style.animationDelay=(k*60)+'ms';r.appendChild(el('span','sev '+c[0],{c:'CRIT',h:'HIGH',m:'MED',l:'LOW',i:'INFO'}[c[0]]));var p=el('p',null,c[1]);p.appendChild(el('small',null,c[2]));r.appendChild(p);clist.appendChild(r)});
+ var v=document.getElementById('cverdict');v.textContent=a.verdict;v.style.color=a.vc;v.style.background=a.vc+'1a';v.style.border='1px solid '+a.vc+'55'}
+nodes.forEach(function(n){n.addEventListener('click',function(){show(+n.dataset.a)})});
+show(2);
+
+var shots=[
+ ['overview','Overview.','Fleet security score, PCs that need attention, overdue audits, the score trend over time and open changes by severity, all on one screen.','DriftWatch overview: fleet security score, devices needing attention, score trend and open changes by severity'],
+ ['compare','Compare.','Two audits side by side. Changes ranked by risk, filtered by severity or category, with before and after values and why each one matters.','DriftWatch comparing two audits of a laptop, with critical changes listed first'],
+ ['device','Device.','Identity card and score gauge, score history, hardware facts and the latest changes for one PC, plus its full audit timeline.','DriftWatch device page with a score gauge, score history and latest changes'],
+ ['posture','Posture.','A compliance matrix of every PC against every check, pass rates per control and advice for each failure.','DriftWatch compliance matrix of six PCs against twenty security checks'],
+ ['software','Software.','Every program across the fleet, with risky tools flagged and one-click Ban, Approve or Require.','DriftWatch software inventory with remote-access tools flagged'],
+ ['checks','Checks.','Each security check explained: what the audit shows, how much it counts, and exactly what to do about it.','DriftWatch security checks for one workstation, light theme']
+];
+var tabs=document.querySelectorAll('[role=tab]'),img=document.getElementById('shot'),cap=document.getElementById('cap'),cnt=document.getElementById('cnt');
+shots.forEach(function(s){var p=new Image();p.src='img/'+s[0]+'.webp'});
+function tab(i){var s=shots[i];tabs.forEach(function(t){t.setAttribute('aria-selected',t.dataset.i==i)});img.style.opacity=.15;setTimeout(function(){img.src='img/'+s[0]+'.webp';img.style.opacity=1},160);img.alt=s[3];cap.textContent='';cap.appendChild(el('b',null,s[1]));cap.appendChild(document.createTextNode(' '+s[2]));cnt.textContent='0'+(i+1)+' / 06'}
+tabs.forEach(function(t){t.addEventListener('click',function(){tab(+t.dataset.i)})});
+document.querySelector('[role=tablist]').addEventListener('keydown',function(e){var cur=+document.querySelector('[role=tab][aria-selected=true]').dataset.i;if(e.key==='ArrowRight'||e.key==='ArrowLeft'){var n=(cur+(e.key==='ArrowRight'?1:5))%6;tab(n);tabs[n].focus()}});
+
+var arc=document.getElementById('arc'),gnum=document.getElementById('gnum'),done=false;
+new IntersectionObserver(function(es){if(es[0].isIntersecting&&!done){done=true;arc.style.strokeDashoffset=578*(1-1);var t0=null;function step(ts){if(!t0)t0=ts;var k=Math.min(1,(ts-t0)/1600);gnum.textContent=Math.round(100*(1-Math.pow(1-k,3)));if(k<1)requestAnimationFrame(step)}if(reduce)gnum.textContent='100';else requestAnimationFrame(step)}},{threshold:.4}).observe(arc);
+if(reduce){arc.style.strokeDashoffset=0;gnum.textContent='100';done=true}
+
+
+/* ---- motion ---- */
+var prog=document.querySelector('.progress');
+function onScroll(){var h=document.documentElement;prog.style.transform='scaleX('+(h.scrollTop/Math.max(1,h.scrollHeight-h.clientHeight))+')'}
+window.addEventListener('scroll',onScroll,{passive:true});onScroll();
+
+var fine=window.matchMedia('(pointer: fine)').matches;
+var cur=document.querySelector('.cursor');
+if(fine&&!reduce){window.addEventListener('pointermove',function(e){cur.style.opacity=1;cur.style.transform='translate('+e.clientX+'px,'+e.clientY+'px)'},{passive:true});document.addEventListener('pointerleave',function(){cur.style.opacity=0})}
+
+document.querySelectorAll('.spot').forEach(function(c){c.addEventListener('pointermove',function(e){var r=c.getBoundingClientRect();c.style.setProperty('--mx',(e.clientX-r.left)+'px');c.style.setProperty('--my',(e.clientY-r.top)+'px')})});
+
+var mon=document.querySelector('.monitor');
+if(fine&&!reduce){mon.addEventListener('pointermove',function(e){var r=mon.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;mon.style.transform='perspective(1600px) rotateY('+(x*6)+'deg) rotateX('+(-y*6)+'deg)'});mon.addEventListener('pointerleave',function(){mon.style.transform=''})}
+
+var cio=new IntersectionObserver(function(es){es.forEach(function(e){if(!e.isIntersecting)return;var b=e.target,n=+b.dataset.count,t0=null;cio.unobserve(b);if(reduce)return;function st(ts){if(!t0)t0=ts;var k=Math.min(1,(ts-t0)/1200);b.textContent=Math.round(n*(1-Math.pow(1-k,3)));if(k<1)requestAnimationFrame(st)}b.textContent='0';requestAnimationFrame(st)})},{threshold:.6});
+document.querySelectorAll('[data-count]').forEach(function(b){cio.observe(b)});
+
+/* network field: PCs drifting, linked, swept by a radar; some light up as alerts */
+var cv=document.getElementById('net'),cx=cv.getContext('2d'),W=0,H=0,dpr=Math.min(2,window.devicePixelRatio||1),nodes=[],mouse={x:-9999,y:-9999},run=true,ang=0,last=0;
+var labels=['ADMIN +1','RTP OFF','BITLOCKER OFF','RDP ON','SMBv1 ON','ANYDESK','FW PUBLIC OFF','UNKNOWN SHARE'];
+function size(){var r=cv.getBoundingClientRect();W=r.width;H=r.height;cv.width=W*dpr;cv.height=H*dpr;cx.setTransform(dpr,0,0,dpr,0,0);
+ var n=Math.min(110,Math.round(W*H/13000));nodes=[];for(var i=0;i<n;i++)nodes.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.25,vy:(Math.random()-.5)*.25,r:Math.random()*1.6+1,p:Math.random()*6.28,hit:0,alert:0,lab:''})}
+function pick(){var a=nodes[(Math.random()*nodes.length)|0];if(a&&!a.alert&&(W<900||a.x>W*.5)&&a.y<H*.85){a.alert=1;a.lab=labels[(Math.random()*labels.length)|0];a.t=0}}
+function frame(ts){if(!run)return;var dt=Math.min(50,ts-(last||ts));last=ts;cx.clearRect(0,0,W,H);
+ var ox=W*.74,oy=H*.42,R=Math.max(W,H);ang+=dt*.0006;
+ var g=cx.createRadialGradient(ox,oy,0,ox,oy,R*.55);
+ cx.save();cx.translate(ox,oy);cx.rotate(ang);
+ var sw=cx.createLinearGradient(0,0,R*.5,0);sw.addColorStop(0,'rgba(34,211,238,0.10)');sw.addColorStop(1,'rgba(34,211,238,0)');
+ cx.beginPath();cx.moveTo(0,0);cx.arc(0,0,R*.6,-0.5,0);cx.closePath();cx.fillStyle=sw;cx.fill();
+ cx.restore();
+ cx.strokeStyle='rgba(120,200,230,0.06)';cx.lineWidth=1;for(var k=1;k<5;k++){cx.beginPath();cx.arc(ox,oy,k*120,0,6.283);cx.stroke()}
+ for(var i=0;i<nodes.length;i++){var a=nodes[i];a.p+=dt*.001;a.x+=a.vx*dt*.06+Math.sin(a.p)*.08;a.y+=a.vy*dt*.06+Math.cos(a.p*.8)*.08;
+  if(a.x<-20)a.x=W+20;if(a.x>W+20)a.x=-20;if(a.y<-20)a.y=H+20;if(a.y>H+20)a.y=-20;
+  var dx=a.x-mouse.x,dy=a.y-mouse.y,d2=dx*dx+dy*dy;if(d2<14400){var f=(14400-d2)/14400*.9;a.x+=dx/Math.sqrt(d2+1)*f;a.y+=dy/Math.sqrt(d2+1)*f}
+  var an=Math.atan2(a.y-oy,a.x-ox),diff=((ang-an)%6.283+6.283)%6.283;if(diff<.06)a.hit=1;a.hit*=.965}
+ for(i=0;i<nodes.length;i++){var a1=nodes[i];for(var j=i+1;j<nodes.length;j++){var b=nodes[j],ddx=a1.x-b.x,ddy=a1.y-b.y,dd=ddx*ddx+ddy*ddy;if(dd<17000){var al=(1-dd/17000)*.22;cx.strokeStyle=(a1.alert||b.alert)?'rgba(244,63,94,'+al*1.4+')':'rgba(34,211,238,'+al+')';cx.beginPath();cx.moveTo(a1.x,a1.y);cx.lineTo(b.x,b.y);cx.stroke()}}
+  var mx=a1.x-mouse.x,my=a1.y-mouse.y,md=mx*mx+my*my;if(md<32000){cx.strokeStyle='rgba(139,124,246,'+(1-md/32000)*.5+')';cx.beginPath();cx.moveTo(a1.x,a1.y);cx.lineTo(mouse.x,mouse.y);cx.stroke()}}
+ cx.font='500 10px "IBM Plex Mono", monospace';
+ for(i=0;i<nodes.length;i++){var n=nodes[i],c='rgba(140,220,240,'+(0.45+n.hit*.55)+')',rr=n.r+n.hit*1.8;
+  if(n.alert){n.t+=dt;var life=n.t/4200;if(life>1){n.alert=0;continue}var ring=(n.t%1400)/1400;
+   cx.strokeStyle='rgba(244,63,94,'+(1-ring)*.8+')';cx.lineWidth=1.2;cx.beginPath();cx.arc(n.x,n.y,4+ring*22,0,6.283);cx.stroke();cx.lineWidth=1;
+   c='rgba(244,63,94,1)';rr=3.2;
+   var tw=cx.measureText(n.lab).width+12,lx=n.x+10>W-tw-6?n.x-tw-10:n.x+10,ly=Math.max(4,n.y-22);cx.fillStyle='rgba(20,8,14,.85)';cx.fillRect(lx,ly,tw,16);cx.strokeStyle='rgba(244,63,94,.6)';cx.strokeRect(lx+.5,ly+.5,tw-1,15);cx.fillStyle='#ffc2cc';cx.fillText(n.lab,lx+6,ly+11.5)}
+  cx.fillStyle=c;cx.beginPath();cx.arc(n.x,n.y,rr,0,6.283);cx.fill();
+  if(n.hit>.3&&!n.alert){cx.fillStyle='rgba(34,211,238,'+n.hit*.25+')';cx.beginPath();cx.arc(n.x,n.y,rr+5,0,6.283);cx.fill()}}
+ requestAnimationFrame(frame)}
+if(!reduce){size();window.addEventListener('resize',size);
+ var hero=document.querySelector('.hero');
+ hero.addEventListener('pointermove',function(e){var r=cv.getBoundingClientRect();mouse.x=e.clientX-r.left;mouse.y=e.clientY-r.top});
+ hero.addEventListener('pointerleave',function(){mouse.x=mouse.y=-9999});
+ new IntersectionObserver(function(es){var v=es[0].isIntersecting;if(v&&!run){run=true;last=0;requestAnimationFrame(frame)}else if(!v)run=false}).observe(hero);
+ document.addEventListener('visibilitychange',function(){if(document.hidden)run=false;else if(!run){run=true;last=0;requestAnimationFrame(frame)}});
+ setInterval(pick,1700);pick();pick();requestAnimationFrame(frame)}
+
+
+/* parallax big words */
+var bws=[].slice.call(document.querySelectorAll('.bigword'));
+function para(){if(reduce)return;var vh=window.innerHeight;bws.forEach(function(w){var r=w.parentNode.getBoundingClientRect();var k=(r.top+r.height/2-vh/2)/vh;w.style.transform='translateX('+(k*(w.classList.contains('l')?-120:120))+'px)'})}
+window.addEventListener('scroll',para,{passive:true});para();
+document.querySelectorAll('.head').forEach(function(h){io.observe(h)});
+
+/* page-wide dust and packets riding the grid */
+var dc=document.getElementById('dust');
+if(!reduce&&dc){var dx=dc.getContext('2d'),DW=0,DH=0,ds=[],pk=[],dl=0,drun=true,ddpr=Math.min(2,window.devicePixelRatio||1);
+ function dsize(){DW=innerWidth;DH=innerHeight;dc.width=DW*ddpr;dc.height=DH*ddpr;dx.setTransform(ddpr,0,0,ddpr,0,0);var n=Math.round(DW*DH/26000);ds=[];for(var i=0;i<n;i++)ds.push({x:Math.random()*DW,y:Math.random()*DH,r:Math.random()*1.3+.3,s:Math.random()*.25+.05,a:Math.random()*.5+.15,p:Math.random()*6})}
+ function spawn(){var h=Math.random()<.5,g=56,cols=['34,211,238','139,124,246','52,211,153','244,63,94'];pk.push({h:h,x:h?-40:Math.round(Math.random()*DW/g)*g,y:h?Math.round(Math.random()*DH/g)*g:-40,v:(Math.random()*.25+.18)*(Math.random()<.5?1:1),c:cols[(Math.random()*cols.length)|0],l:0})}
+ function dframe(ts){if(!drun)return;var dt=Math.min(50,ts-(dl||ts));dl=ts;dx.clearRect(0,0,DW,DH);
+  for(var i=0;i<ds.length;i++){var d=ds[i];d.y-=d.s*dt*.05;d.p+=dt*.001;if(d.y<-5){d.y=DH+5;d.x=Math.random()*DW}dx.fillStyle='rgba(160,220,240,'+(d.a*(.6+.4*Math.sin(d.p)))+')';dx.beginPath();dx.arc(d.x+Math.sin(d.p)*6,d.y,d.r,0,6.283);dx.fill()}
+  for(i=pk.length-1;i>=0;i--){var p=pk[i];p.l+=dt;if(p.h)p.x+=p.v*dt;else p.y+=p.v*dt;
+   var tx=p.h?p.x-120:p.x,ty=p.h?p.y:p.y-120,gr=dx.createLinearGradient(tx,ty,p.x,p.y);gr.addColorStop(0,'rgba('+p.c+',0)');gr.addColorStop(1,'rgba('+p.c+',.55)');
+   dx.strokeStyle=gr;dx.lineWidth=1.5;dx.beginPath();dx.moveTo(tx,ty);dx.lineTo(p.x,p.y);dx.stroke();
+   dx.fillStyle='rgba('+p.c+',.9)';dx.beginPath();dx.arc(p.x,p.y,2,0,6.283);dx.fill();
+   if(p.x>DW+150||p.y>DH+150)pk.splice(i,1)}
+  if(pk.length<5&&Math.random()<.02)spawn();
+  requestAnimationFrame(dframe)}
+ dsize();addEventListener('resize',dsize);document.addEventListener('visibilitychange',function(){if(document.hidden)drun=false;else if(!drun){drun=true;dl=0;requestAnimationFrame(dframe)}});requestAnimationFrame(dframe)}
+
+document.getElementById('copy').addEventListener('click',function(){var b=this;var h='84cc4880a9a6bea68d97d1320b4d0ec767b897513437efbab33a390b0459961f';if(navigator.clipboard){navigator.clipboard.writeText(h).then(function(){b.textContent='Copied';setTimeout(function(){b.textContent='Copy'},1600)})}});
+})();
+</script>
+</body>
+</html>
